@@ -1,9 +1,8 @@
 from flask import Flask
-#from superApp import dhan
 import superApp as myApp
 from flask_cors import CORS
 
-api = "127.0.0.1:8080"
+api = "127.0.0.1:8000"
 app = Flask(__name__)
 cors = CORS(app)
 

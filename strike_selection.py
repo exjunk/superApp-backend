@@ -5,8 +5,15 @@ from datetime import datetime
 from Enums import Index
 
 
+
 def download_security_csv():
     wget.download("https://images.dhan.co/api-data/api-scrip-master.csv","security.csv")
+
+def find_index_list():
+    data = pd.read_csv('security.csv',encoding='utf-8', engine='python')
+    df = pd.DataFrame(data)
+    index_list = df[df['SEM_INSTRUMENT_NAME'] == 'FUTIDX'] # INDEX , FUTIDX ,OPTIDX , EQUITY
+    index_list.to_csv("index_list_fut.csv")
 
 def read_csv():
     data = pd.read_csv('security.csv',encoding='utf-8', engine='python')
@@ -56,7 +63,7 @@ nifty_expiry_current,nifty_expiry_next = pre_requisite_strike_selection(filterOP
 finnifty_expiry_current,fininifty_expiry_next = pre_requisite_strike_selection(filterOPT,Index.FINNIFTY.name)
 sensex_expiry_current,sensex_expiry_next = pre_requisite_strike_selection(filterOPT,Index.SENSEX.name)
 
-def calculate_trading_strike(is_current_expiry,index_name,current_price,index_multiplier):
+def calculate_trading_strike(is_current_expiry,index_name,current_price,index_multiplier,option_type)->(pd.DataFrame):
     if(index_name == Index.BANKNIFTY.name):
         current_expiry_df = bnf_expiry_current
         next_expiry_df = bnf_expiry_next
@@ -98,8 +105,10 @@ def calculate_trading_strike(is_current_expiry,index_name,current_price,index_mu
         if(len(next_expiry_PE_df) > 0):
             trading_PE = next_expiry_PE_df.iloc[-1]
 
-    print(trading_CE)
-    print(trading_PE)
+    if(option_type == "PE"):
+        return trading_PE
+    else:
+        return trading_CE
 
 
 
