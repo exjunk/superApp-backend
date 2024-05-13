@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,request
 import superApp as myApp
 from flask_cors import CORS
 
@@ -19,7 +19,12 @@ def getAllOrders():
 
 @app.route('/placeOrder', methods=["GET"])
 def placeOrder():
-    return myApp.placeOrder()
+    index_name = request.args.get('index')
+    option_type = request.args.get('option_type')
+    transaction_type = request.args.get('transaction_type')
+ #   print(index_name)
+  #  print(option_type)
+    return myApp.placeOrder(index_name,option_type,transaction_type)
 
 @app.route('/')
 def hello():

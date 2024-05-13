@@ -1,0 +1,7 @@
+
+client_id = "1100323569"
+client_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE2NzU3NTI5LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDMyMzU2OSJ9.vFZDPb5I7BOHnKfg88lw8DvRUuXxO0Lc2JAbs7cuyXX5BKA-9fgBns8Zo2iwdO2jfi0f8-4ocNdlfX9O-Kq7-Q"
+
+class DefaultExpiry:
+    current = True
+

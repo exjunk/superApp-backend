@@ -1,19 +1,22 @@
 from dhanhq import marketfeed
-from superApp import client_token
-from ticker_data_model import Ticker_data
-import json
+from config import client_token,client_id
+import threading
+import signal
+import time
 
 # Add your Dhan Client ID and Access Token
-client_id = "1100323569"
 access_token = client_token
 
-BankNifty_current_price = 0
-
+bankNifty_current_price = 0
+finnifty_current_price = 0
+sensex_current_price = 0
+nifty_current_price = 0
 # Structure for subscribing is ("exchange_segment","security_id")
 
 # Maximum 100 instruments can be subscribed, then use 'subscribe_symbols' function 
 
-instruments = [(0, "25"),(0,"13"),(0,"51")]  # 0 = NSE , 1 = BSE
+instruments = [(0, "25"),(0,"13"),(0,"51"),(0,"27")]  #13 - Nifty , 25 BNF , 27 Finnifty , 51 Sensex 
+                                            # exchange segment - 0 for INDEX , 1 for EQUITY
 
 # Type of data subscription
 subscription_code = marketfeed.Ticker
@@ -25,14 +28,42 @@ async def on_connect(instance):
     print("Connected to websocket")
 
 async def on_message(instance, message):
-   # print("Received:", message)
-   ticker_data = Ticker_data(**json.loads(message))
-   if(ticker_data.security_id == 25):
-       BankNifty_current_price = ticker_data.ltp
+    global bankNifty_current_price
+    global finnifty_current_price 
+    global sensex_current_price
+    global nifty_current_price
+  #  print("Received:", message)
+  # ticker_data = Ticker_data(**json.loads(str(message)))
+    if(message['security_id'] == 25):
+     exist = 'LTP' in message
+     if(exist):
+        bankNifty_current_price = message.get('LTP')
+    
+    if(message['security_id'] == 27):
+     exist = 'LTP' in message
+     if(exist):
+        finnifty_current_price = message.get('LTP')
+
+    if(message['security_id'] == 13):
+     exist = 'LTP' in message
+     if(exist):
+        nifty_current_price = message.get('LTP')
+
+    if(message['security_id'] == 51):
+     exist = 'LTP' in message
+     if(exist):
+        sensex_current_price = message.get('LTP')
+    
 
 print("Subscription code :"+str(subscription_code))
 
-feed = marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
-    on_message=on_message)
+def runSocketThread():
+    feed = marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
+        on_message=on_message)
 
-feed.run_forever()
+    def run_from_thread():
+        feed.run_forever()
+
+    thread = threading.Thread(target=run_from_thread)
+    thread.start()
+

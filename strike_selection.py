@@ -3,11 +3,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from Enums import Index
+import os.path
 
-
-
-def download_security_csv():
-    wget.download("https://images.dhan.co/api-data/api-scrip-master.csv","security.csv")
 
 def find_index_list():
     data = pd.read_csv('security.csv',encoding='utf-8', engine='python')
@@ -16,6 +13,7 @@ def find_index_list():
     index_list.to_csv("index_list_fut.csv")
 
 def read_csv():
+    #download_security_csv()
     data = pd.read_csv('security.csv',encoding='utf-8', engine='python')
     df = pd.DataFrame(data)
     df.replace(r'^\s*$', np.nan, regex=True)
@@ -80,9 +78,10 @@ def calculate_trading_strike(is_current_expiry,index_name,current_price,index_mu
         current_expiry_df = sensex_expiry_current
         next_expiry_df = sensex_expiry_next
 
+    print(current_price)
 
-    lower_bound = current_price - (2*index_multiplier)
-    upper_bound = current_price + (2*index_multiplier)
+    lower_bound = float(current_price) - (2*index_multiplier)
+    upper_bound = float(current_price) + (2*index_multiplier)
 
     current_expiry_strike_df =  current_expiry_df[current_expiry_df['SEM_STRIKE_PRICE'].between(lower_bound,upper_bound)]
     next_expiry_strike_df = next_expiry_df[next_expiry_df['SEM_STRIKE_PRICE'].between(lower_bound,upper_bound)]
