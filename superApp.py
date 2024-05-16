@@ -40,12 +40,24 @@ def placeOrder(index_name,option_type,transaction_type):
 def get_open_positions():
     return dhan.get_positions()
 
-def closeAllPositions():
-    open_position = get_open_positions()
+def get_order_status(order_id):
+    return dhan.get_order_by_id(order_id=order_id)
+
+def closeAllPositions(security_id,exchange_segment,transaction_type,quantity,product_type):
+    return dhan.place_order(security_id=security_id,   
+        exchange_segment=exchange_segment,
+        transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
+        quantity=quantity,
+        order_type=dhan.MARKET,
+        product_type= product_type,#dhan.INTRA,
+        price=0)
     
 
 def getOrders():
    return dhan.get_order_list()
+
+def getFundLimit():
+    return dhan.get_fund_limits()
 
 class Index_attributes:
         def get_index_attributes(name)->(Index_config):

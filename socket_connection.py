@@ -1,8 +1,7 @@
 from dhanhq import marketfeed
 from config import client_token,client_id
 import threading
-import signal
-import time
+
 
 # Add your Dhan Client ID and Access Token
 access_token = client_token
