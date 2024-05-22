@@ -1,7 +1,7 @@
 from dhanhq import dhanhq
 import strike_selection as strike_selection
 from config import client_token,DefaultExpiry
-import socket_connection as socket
+import index_socket_connection as socket
 from Enums import Index
 from Index_config import Index_config
 from config import client_token
@@ -9,7 +9,9 @@ import wget
 
 
 dhan = dhanhq("client_id",client_token)
-socket.runSocketThread()
+feed = socket.getFeed()
+socket.runSocketThread(feed=feed)
+
 
 def download_security_csv():
     wget.download("https://images.dhan.co/api-data/api-scrip-master.csv","security.csv")

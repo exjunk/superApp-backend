@@ -10,6 +10,8 @@ bankNifty_current_price = 0
 finnifty_current_price = 0
 sensex_current_price = 0
 nifty_current_price = 0
+symbol_sub = {}
+
 # Structure for subscribing is ("exchange_segment","security_id")
 
 # Maximum 100 instruments can be subscribed, then use 'subscribe_symbols' function 
@@ -31,38 +33,55 @@ async def on_message(instance, message):
     global finnifty_current_price 
     global sensex_current_price
     global nifty_current_price
-  #  print("Received:", message)
+    global symbol_sub
+    print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
     if(message['security_id'] == 25):
      exist = 'LTP' in message
      if(exist):
         bankNifty_current_price = message.get('LTP')
     
-    if(message['security_id'] == 27):
+    elif(message['security_id'] == 27):
      exist = 'LTP' in message
      if(exist):
         finnifty_current_price = message.get('LTP')
 
-    if(message['security_id'] == 13):
+    elif(message['security_id'] == 13):
      exist = 'LTP' in message
      if(exist):
         nifty_current_price = message.get('LTP')
 
-    if(message['security_id'] == 51):
+    elif(message['security_id'] == 51):
      exist = 'LTP' in message
      if(exist):
         sensex_current_price = message.get('LTP')
     
+    else:
+       exist = 'LTP' in message
+       if(exist):
+        symbol_sub = dict(message['security_id'],message.get('LTP'))
+
+    
+    
 
 print("Subscription code :"+str(subscription_code))
 
-def runSocketThread():
-    feed = marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
+def getFeed():
+    return marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
         on_message=on_message)
-
+    
+def runSocketThread(feed):    
     def run_from_thread():
         feed.run_forever()
 
     thread = threading.Thread(target=run_from_thread)
     thread.start()
+
+def subScribeSymbols(feed,security_id):
+       feed.subscribe_symbols(subscription_code,security_id)   
+       
+
+def unsubScribeSymbols(feed,security_id):
+       feed.unsubscribe_symbols(subscription_code,security_id)
+       symbol_sub.pop(security_id,None)     
 
