@@ -53,9 +53,7 @@ def placeOrder():
 
     data = myApp.placeOrder(index_name,option_type,transaction_type)
     response = make_response(data)
-   # response.json = data
     response.headers['x-request-type'] = 'placeOrder'
-   # response.status_code = 200
     return response
 
 @app.route('/fundLimits', methods=["GET"])

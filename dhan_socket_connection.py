@@ -34,7 +34,7 @@ async def on_message(instance, message):
     global sensex_current_price
     global nifty_current_price
     global symbol_sub
-    print("Received:", message)
+   # print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
     if(message['security_id'] == 25):
      exist = 'LTP' in message
