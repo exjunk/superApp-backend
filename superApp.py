@@ -32,11 +32,13 @@ def download_security_csv():
 
 def placeOrder(index_name,option_type,transaction_type):
     index_attribute = Index_attributes.get_index_attributes(index_name)
-    
     multiplier = index_attribute.multiplier
     current_price = index_attribute.current_price
     strike_price = strike_selection.calculate_trading_strike(DefaultExpiry.current,index_name,current_price,multiplier,option_type)
     
+
+    
+
     return dhan.place_order(security_id=str(strike_price['SEM_SMST_SECURITY_ID']),   
     exchange_segment=index_attribute.exchange_segment,
     transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL

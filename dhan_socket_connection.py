@@ -10,7 +10,7 @@ bankNifty_current_price = 0
 finnifty_current_price = 0
 sensex_current_price = 0
 nifty_current_price = 0
-symbol_sub = {}
+symbol_sub = dict()
 
 # Structure for subscribing is ("exchange_segment","security_id")
 

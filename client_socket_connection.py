@@ -64,7 +64,7 @@ def run_server():
 
  #normal Socket for Mobile clients    
 
-def start_server(host='127.0.0.1', port=65432): 
+def start_mobile_server(host='127.0.0.1', port=65432): 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
@@ -86,7 +86,7 @@ def start_server(host='127.0.0.1', port=65432):
 
 def run_start_server():
     def run_from_thread():
-        start_server()
+        result  = start_server()
 
     thread = threading.Thread(target=run_from_thread)
     thread.start()
