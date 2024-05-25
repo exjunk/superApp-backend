@@ -61,7 +61,7 @@ def fundLimit():
     return myApp.getFundLimit()
 
 @app.route('/')
-def hello():
+def flask_server():
     return 'hello_world'
 
 if(__name__ == '__main__'):
