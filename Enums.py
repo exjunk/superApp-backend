@@ -12,3 +12,11 @@ class Index(Enum):
 class Option_Type(Enum):
     CE = 1
     PE = 2
+
+class Order_status(Enum):
+    TRANSIT = 1
+    PENDING = 2
+    REJECTED = 3
+    CANCELLED = 4
+    TRADED = 5
+    EXPIRED = 6

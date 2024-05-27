@@ -2,7 +2,6 @@ import threading
 import socket
 import asyncio
 import websockets
-import time
 
 clients = set()
 

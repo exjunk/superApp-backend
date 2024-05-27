@@ -1,6 +1,8 @@
 
+security_scrip_download_url = "https://images.dhan.co/api-data/api-scrip-master.csv"
 client_id = "1100323569"
 client_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE5MTE1MjQ1LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDMyMzU2OSJ9.YzOdkJF6JpE04wCAWJMNRIAXFEfm6MVmRJffQgcGhshVvfI8WGUDS4bLl9YvA0Wy2CU3hXDJ9H4WySbEPXDAoQ"
 class DefaultExpiry:
     current = True
+
 
