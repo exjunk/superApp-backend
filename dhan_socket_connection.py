@@ -3,6 +3,7 @@ from config import client_token,client_id
 import threading
 
 
+
 # Add your Dhan Client ID and Access Token
 access_token = client_token
 
@@ -10,7 +11,7 @@ bankNifty_current_price = 0
 finnifty_current_price = 0
 sensex_current_price = 0
 nifty_current_price = 0
-symbol_sub = dict()
+symbol_sub = {}
 
 # Structure for subscribing is ("exchange_segment","security_id")
 
@@ -34,7 +35,8 @@ async def on_message(instance, message):
     global sensex_current_price
     global nifty_current_price
     global symbol_sub
-   # print("Received:", message)
+
+  # print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
     if(message['security_id'] == 25):
      exist = 'LTP' in message
@@ -59,7 +61,7 @@ async def on_message(instance, message):
     else:
        exist = 'LTP' in message
        if(exist):
-        symbol_sub = dict(message['security_id'],message.get('LTP'))
+        symbol_sub = dict(message['security_id'],message)
 
     
     
@@ -77,11 +79,12 @@ def runSocketThread(feed):
     thread = threading.Thread(target=run_from_thread)
     thread.start()
 
-def subScribeSymbols(feed,security_id):
-       feed.subscribe_symbols(subscription_code,security_id)   
+def subscribe_symbols(feed,security_id):
+       feed.subscribe_symbols(subscription_code,security_id) 
+       symbol_sub[security_id] = ""
        
 
-def unsubScribeSymbols(feed,security_id):
+def unsubscribe_symbols(feed,security_id):
        feed.unsubscribe_symbols(subscription_code,security_id)
        symbol_sub.pop(security_id,None)     
 

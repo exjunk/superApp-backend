@@ -22,4 +22,17 @@ def insert_order(data,table_name):
     #     connection.close()
 
 
+def get_config_details(client_id):
+    try:
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f"SELECT * from user_config where dhanClientId = {client_id}"
+            cursor.execute(sql) 
+            return cursor.fetchall()
+
+    except Exception as e:
+        print(e)     
+        connection.close()
+
+
+
 

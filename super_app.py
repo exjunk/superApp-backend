@@ -11,14 +11,16 @@ import utils as utils
 import file_downloader as file_downloader
 import db_management as db_management
 import json
+import server
 
 file_downloader.manage_file_download(url=security_scrip_download_url,file_path="security.csv")
 
 dhan = dhanhq("client_id",client_token)
 feed = dhan_socket.getFeed()
 dhan_socket.runSocketThread(feed=feed) #Socket connection dhan IQ
+server.run_server()
 
-client_socket.run_server()
+#client_socket.run_server()
 
 #def close_socket():
  #   incoming_socket.close_socket(my_socket,connection)
@@ -40,13 +42,13 @@ def get_order_status(order_id):
         return {}
    
 
-def placeOrder(index_name,option_type,transaction_type):
+def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id):
     try:
         index_attribute = Index_attributes.get_index_attributes(index_name)
         multiplier = index_attribute.multiplier
         current_price = index_attribute.current_price
         strike_price = strike_selection.calculate_trading_strike(DefaultExpiry.current,index_name,current_price,multiplier,option_type)
-        correlation_id = utils.generate_correlation_id(max_length=15)
+        correlation_id = client_order_id #utils.generate_correlation_id(max_length=15)
         order_type = dhan.MARKET
         security_id = str(strike_price['SEM_SMST_SECURITY_ID'])
         strike_symbol = strike_price['SEM_CUSTOM_SYMBOL']
@@ -85,7 +87,7 @@ def placeOrder(index_name,option_type,transaction_type):
             order_status = place_order_result['data']['orderStatus']
 
             if(order_status == enum.Order_status.PENDING.name or order_status == enum.Order_status.TRANSIT.name):
-                checker = StatusChecker(timeout=10,dhan=dhan,order_id=id)
+                checker = StatusChecker(timeout=10,dhan=dhan,order_id=id,correlation_id=correlation_id,security_id=security_id,socket_client_id=socket_client_id)
                 checker.start()
 
         return place_order_result

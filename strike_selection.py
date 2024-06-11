@@ -80,7 +80,7 @@ def calculate_trading_strike(is_current_expiry,index_name,current_price,index_mu
 
     print(current_price)
 
-    lower_bound = float(current_price) - (2*index_multiplier)
+    lower_bound = float(current_price) - (2*index_multiplier) # change 10 to 2 to select nearby strikes
     upper_bound = float(current_price) + (2*index_multiplier)
 
     current_expiry_strike_df =  current_expiry_df[current_expiry_df['SEM_STRIKE_PRICE'].between(lower_bound,upper_bound)]

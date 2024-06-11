@@ -1,5 +1,5 @@
 from flask import Flask,request
-import superApp as myApp
+import super_app as my_app
 from flask_cors import CORS
 from flask import make_response
 
@@ -17,19 +17,19 @@ def after_request(response):
 
 @app.route('/orders', methods=["GET"])
 def getAllOrders():
-    return myApp.getOrders()
+    return my_app.getOrders()
 
 @app.route('/orderstatus', methods=["GET"])
 def get_order_status():
     order_id = request.args.get('order_id')
-    data = myApp.get_order_status(order_id)
+    data = my_app.get_order_status(order_id)
     response = make_response(data)
-    response.headers['x-request-type'] = 'orderstatus'
+    #response.headers['x-request-type'] = 'orderstatus'
     return response
 
 @app.route('/openPosition', methods=["GET"])
 def getOpenPosition():
-    return myApp.get_open_positions()
+    return my_app.get_open_positions()
 
 @app.route('/closePosition', methods=["GET"])
 def closePosition():
@@ -39,9 +39,9 @@ def closePosition():
     quantity = request.args.get('quantity')
     product_type = request.args.get('product_type')
 
-    data = myApp.closeAllPositions(security_id=security_id,exchange_segment=exchange_segment,transaction_type=transaction_type,quantity=quantity,product_type=product_type)
+    data = my_app.closeAllPositions(security_id=security_id,exchange_segment=exchange_segment,transaction_type=transaction_type,quantity=quantity,product_type=product_type)
     response = make_response(data)
-    response.headers['x-request-type'] = 'closePosition'
+    #response.headers['x-request-type'] = 'closePosition'
     return response
  
 
@@ -50,15 +50,18 @@ def placeOrder():
     index_name = request.args.get('index')
     option_type = request.args.get('option_type')
     transaction_type = request.args.get('transaction_type')
+    client_order_id = request.args.get('client_order_id')
+    socket_client_id = request.args.get('socket_client_id')
 
-    data = myApp.placeOrder(index_name,option_type,transaction_type)
+    data = my_app.placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id)
+    data['client_order_id'] = client_order_id
     response = make_response(data)
-    response.headers['x-request-type'] = 'placeOrder'
+   # response.headers['x-request-type'] = 'placeOrder'
     return response
 
 @app.route('/fundLimits', methods=["GET"])
 def fundLimit():
-    return myApp.getFundLimit()
+    return my_app.getFundLimit()
 
 @app.route('/')
 def flask_server():
