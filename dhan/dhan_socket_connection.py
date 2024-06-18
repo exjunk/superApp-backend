@@ -1,6 +1,6 @@
 from dhanhq import marketfeed
 from config import client_token,client_id
-import threading
+
 
 
 
@@ -36,7 +36,7 @@ async def on_message(instance, message):
     global nifty_current_price
     global symbol_sub
 
-  # print("Received:", message)
+    #print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
     if(message['security_id'] == 25):
      exist = 'LTP' in message
@@ -68,23 +68,24 @@ async def on_message(instance, message):
 
 print("Subscription code :"+str(subscription_code))
 
-def getFeed():
-    return marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
+def get_dhan_feed():
+    feed = marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
         on_message=on_message)
     
-def runSocketThread(feed):    
-    def run_from_thread():
-        feed.run_forever()
+    return feed
 
-    thread = threading.Thread(target=run_from_thread)
-    thread.start()
+async def run_feed(feed):
+   await feed.run_forever()
 
-def subscribe_symbols(feed,security_id):
-       feed.subscribe_symbols(subscription_code,security_id) 
-       symbol_sub[security_id] = ""
+
+
+async def subscribe_symbols(feed,security_id):
+       symbols = [(0, security_id)]
+       feed.subscribe_symbols(symbols) 
+       
        
 
-def unsubscribe_symbols(feed,security_id):
+async def unsubscribe_symbols(feed,security_id):
        feed.unsubscribe_symbols(subscription_code,security_id)
        symbol_sub.pop(security_id,None)     
 

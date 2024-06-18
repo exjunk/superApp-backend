@@ -1,38 +1,25 @@
 from dhanhq import dhanhq
-import strike_selection as strike_selection
+
 from config import client_token,DefaultExpiry,security_scrip_download_url,client_id
 import dhan_socket_connection as dhan_socket
-import client_socket_connection as client_socket
 from Enums import Index
 from Index_config import Index_config
-from status_checker import StatusChecker
-import Enums as enum
 import utils as utils
 import file_downloader as file_downloader
 import db_management as db_management
 import json
-import server
-
-file_downloader.manage_file_download(url=security_scrip_download_url,file_path="security.csv")
 
 dhan = dhanhq("client_id",client_token)
-feed = dhan_socket.getFeed()
-dhan_socket.runSocketThread(feed=feed) #Socket connection dhan IQ
-server.run_server()
 
-#client_socket.run_server()
+def init():
+    file_downloader.manage_file_download(url=security_scrip_download_url,file_path="security.csv")
+    
 
-#def close_socket():
- #   incoming_socket.close_socket(my_socket,connection)
+def run_dhan_feed():
+    feed = dhan_socket.get_dhan_feed()
+    feed.run_forever()
+# init()
 
-#download_security_csv()
-#def initStrikePrice():
-   #strike_selection.download_security_csv()
-   #strike_selection.calculate_trading_strike(True,"NIFTY",22300,50)
-   #strike_selection.calculate_trading_strike(True,"BANKNIFTY",48285,100)
-   #strike_selection.calculate_trading_strike(True,"FINNIFTY",21543,50)
-   #strike_selection.calculate_trading_strike(True,"SENSEX",73511,100)
-   
 def get_order_status(order_id):
     try:
         return dhan.get_order_by_id(order_id=order_id)
@@ -43,10 +30,13 @@ def get_order_status(order_id):
    
 
 def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id):
+    import strike_selection as strike_selection
+
     try:
         index_attribute = Index_attributes.get_index_attributes(index_name)
         multiplier = index_attribute.multiplier
         current_price = index_attribute.current_price
+        
         strike_price = strike_selection.calculate_trading_strike(DefaultExpiry.current,index_name,current_price,multiplier,option_type)
         correlation_id = client_order_id #utils.generate_correlation_id(max_length=15)
         order_type = dhan.MARKET
@@ -86,10 +76,11 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_cl
             id = place_order_result['data']['orderId']
             order_status = place_order_result['data']['orderStatus']
 
-            if(order_status == enum.Order_status.PENDING.name or order_status == enum.Order_status.TRANSIT.name):
-                checker = StatusChecker(timeout=10,dhan=dhan,order_id=id,correlation_id=correlation_id,security_id=security_id,socket_client_id=socket_client_id)
-                checker.start()
-
+            # if(order_status == enum.Order_status.PENDING.name or order_status == enum.Order_status.TRANSIT.name):
+            #     checker = StatusChecker(timeout=10,dhan=dhan,order_id=id,correlation_id=correlation_id,security_id=security_id,socket_client_id=socket_client_id)
+            #     checker.start()
+    	
+        #dhan_socket.subscribe_symbols(feed,security_id)
         return place_order_result
     
     except Exception as e:

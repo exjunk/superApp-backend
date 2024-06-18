@@ -1,6 +1,4 @@
 from websocket_server import WebsocketServer
-import threading
-import asyncio
 import json
 
 # Called for every client connecting (after handshake)
@@ -26,7 +24,7 @@ def send_message(message,client_id):
 	active_server.send_message(client,message)
 	
 
-async def init_and_run_server():
+def init_and_run_server():
 	PORT=8765
 	global active_server
 	active_server = WebsocketServer(port = PORT)
@@ -35,14 +33,6 @@ async def init_and_run_server():
 	active_server.set_fn_message_received(message_received)
 	active_server.run_forever()
 
-
-
-def run_server():    
-    def run_from_thread():
-        asyncio.run(init_and_run_server())
-
-    thread = threading.Thread(target=run_from_thread)
-    thread.start()
 
 # for testing purpose only 
 def init_and_run():

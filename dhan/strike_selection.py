@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from Enums import Index
-import os.path
+
 
 
 def find_index_list():
@@ -62,6 +62,8 @@ finnifty_expiry_current,fininifty_expiry_next = pre_requisite_strike_selection(f
 sensex_expiry_current,sensex_expiry_next = pre_requisite_strike_selection(filterOPT,Index.SENSEX.name)
 
 def calculate_trading_strike(is_current_expiry,index_name,current_price,index_multiplier,option_type)->(pd.DataFrame):
+    
+    
     if(index_name == Index.BANKNIFTY.name):
         current_expiry_df = bnf_expiry_current
         next_expiry_df = bnf_expiry_next

@@ -1,5 +1,6 @@
 
 import db_management as db_management
+from Enums import Index
 
 
 
@@ -26,6 +27,17 @@ class Client_configuration:
 
     def __repr__(self) -> str:
         return f"Client_configuration(dhanClientId = {self.dhanClientId},bnf_max_quantity = {self.bnf_max_quantity},nifty_max_quantity = {self.nifty_max_quantity},finnifty_max_quantity = {self.finnifty_max_quantity},midcap_max_quantity = {self.midcap_max_quantity},bankex_max_quantity = {self.bankex_max_quantity},sensex_max_quantity = {self.sensex_max_quantity},hard_sl = {self.hard_sl},soft_sl = {self.soft_sl},max_risk_of_day = {self.max_risk_of_day},risk_per_trade = {self.risk_per_trade},kill_switch_risk = {self.kill_switch_risk})"
+    
+    def get_qty(self,index):
+        if index == Index.BANKNIFTY:
+            return self.bnf_max_quantity
+        if index == Index.SENSEX:
+            return self.sensex_max_quantity
+        if index == Index.NIFTY:
+            return self.nifty_max_quantity
+        if index == Index.FINNIFTY:
+            return self.finnifty_max_quantity
+        
         
 
 def dict_to_class(cls, d):
