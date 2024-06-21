@@ -61,6 +61,33 @@ nifty_expiry_current,nifty_expiry_next = pre_requisite_strike_selection(filterOP
 finnifty_expiry_current,fininifty_expiry_next = pre_requisite_strike_selection(filterOPT,Index.FINNIFTY.name)
 sensex_expiry_current,sensex_expiry_next = pre_requisite_strike_selection(filterOPT,Index.SENSEX.name)
 
+def calculate_near_strikes(index_name,current_price,index_multiplier):
+    
+    lower_bound = float(current_price) - (5*index_multiplier) 
+    upper_bound = float(current_price) + (5*index_multiplier)
+
+    if(index_name == Index.BANKNIFTY.name):
+        current_expiry_df = bnf_expiry_current
+        
+    if(index_name == Index.NIFTY.name):
+        current_expiry_df = nifty_expiry_current
+        
+    if(index_name == Index.FINNIFTY.name):
+        current_expiry_df = finnifty_expiry_current
+        
+    if(index_name == Index.SENSEX.name):
+        current_expiry_df = sensex_expiry_current
+        
+    current_expiry_strike_df =  current_expiry_df[current_expiry_df['SEM_STRIKE_PRICE'].between(lower_bound,upper_bound)]
+    current_expiry_CE_df = current_expiry_strike_df[current_expiry_strike_df['SEM_OPTION_TYPE'] == 'CE']
+    current_expiry_PE_df = current_expiry_strike_df[current_expiry_strike_df['SEM_OPTION_TYPE'] == 'PE']
+   
+    result = []
+    result.append(current_expiry_CE_df['SEM_SMST_SECURITY_ID'].to_list())
+    result.append(current_expiry_PE_df['SEM_SMST_SECURITY_ID'].to_list())
+
+    return result
+
 def calculate_trading_strike(is_current_expiry,index_name,current_price,index_multiplier,option_type)->(pd.DataFrame):
     
     
@@ -80,7 +107,7 @@ def calculate_trading_strike(is_current_expiry,index_name,current_price,index_mu
         current_expiry_df = sensex_expiry_current
         next_expiry_df = sensex_expiry_next
 
-    print(current_price)
+    #print(current_price)
 
     lower_bound = float(current_price) - (2*index_multiplier) # change 10 to 2 to select nearby strikes
     upper_bound = float(current_price) + (2*index_multiplier)

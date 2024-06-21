@@ -16,7 +16,7 @@ def insert_order(data,table_name):
             cursor.execute(sql)         
         connection.commit()   
     except Exception as e:
-        print(e)     
+        #print(e)     
         connection.close()
     # finally:
     #     connection.close()
@@ -30,7 +30,7 @@ def get_config_details(client_id):
             return cursor.fetchall()
 
     except Exception as e:
-        print(e)     
+        #print(e)     
         connection.close()
 
 

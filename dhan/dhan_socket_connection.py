@@ -1,7 +1,8 @@
 from dhanhq import marketfeed
 from config import client_token,client_id
-
-
+import threading
+import asyncio
+from Enums import Index
 
 
 # Add your Dhan Client ID and Access Token
@@ -17,11 +18,12 @@ symbol_sub = {}
 
 # Maximum 100 instruments can be subscribed, then use 'subscribe_symbols' function 
 
-instruments = [(0, "25"),(0,"13"),(0,"51"),(0,"27")]  #13 - Nifty , 25 BNF , 27 Finnifty , 51 Sensex 
+instruments = [(marketfeed.IDX, "25"),(marketfeed.IDX,"13"),(marketfeed.IDX,"51"),(marketfeed.IDX,"27")]  #13 - Nifty , 25 BNF , 27 Finnifty , 51 Sensex 
                                             # exchange segment - 0 for INDEX , 1 for EQUITY
 
 # Type of data subscription
 subscription_code = marketfeed.Ticker
+
 
 # Ticker - Ticker Data
 # Quote - Quote Data
@@ -30,57 +32,71 @@ async def on_connect(instance):
     print("Connected to websocket")
 
 async def on_message(instance, message):
-    global bankNifty_current_price
-    global finnifty_current_price 
-    global sensex_current_price
-    global nifty_current_price
-    global symbol_sub
-
-    #print("Received:", message)
+  #  print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
-    if(message['security_id'] == 25):
-     exist = 'LTP' in message
-     if(exist):
-        bankNifty_current_price = message.get('LTP')
-    
-    elif(message['security_id'] == 27):
-     exist = 'LTP' in message
-     if(exist):
-        finnifty_current_price = message.get('LTP')
+    conn.send(message)
+        
 
-    elif(message['security_id'] == 13):
-     exist = 'LTP' in message
-     if(exist):
-        nifty_current_price = message.get('LTP')
+#print("Subscription code :"+str(subscription_code))
 
-    elif(message['security_id'] == 51):
-     exist = 'LTP' in message
-     if(exist):
-        sensex_current_price = message.get('LTP')
-    
-    else:
-       exist = 'LTP' in message
-       if(exist):
-        symbol_sub = dict(message['security_id'],message)
+def get_dhan_feed(connection,strikes):
+    global conn
+    global feed
 
-    
-    
+    i = 0
+    for item in strikes:
+        #print(f"item--> type --> {(item['value'] is tuple)} {item['value']}")
+        
+        for CE in item['value']:           
+            if item['index'] == Index.SENSEX.name:
+                segment = marketfeed.BSE_FNO
+            else:
+                segment = marketfeed.NSE_FNO
 
-print("Subscription code :"+str(subscription_code))
+            for call in CE :
+                i = i+1
+                instruments.append((segment,str(call)))
 
-def get_dhan_feed():
     feed = marketfeed.DhanFeed(client_id,access_token,instruments,subscription_code,on_connect=on_connect,
         on_message=on_message)
-    
+    conn = connection #process pipe connection
+
+    receiver_thread(conn)
     return feed
+
+def receiver_parse_msg(msg):
+   if msg['topic'] == 'sub':
+      subscribe_symbols(msg['security_id'],msg['index'])
+
+def receiver_thread(conn):
+    loop = asyncio.new_event_loop()
+    thread = threading.Thread(target=receiver, args=(conn,loop,))
+    thread.start()
+    return thread
+
+def receiver(conn,loop):
+   asyncio.set_event_loop(loop)
+   while True:
+        msg = conn.recv()
+        print(msg)
+        receiver_parse_msg(msg)
+        if msg == "STOP":
+            print("Stopping receiver...")
+            break
 
 async def run_feed(feed):
    await feed.run_forever()
 
 
 
-async def subscribe_symbols(feed,security_id):
-       symbols = [(0, security_id)]
+def subscribe_symbols(security_id,index):
+       if index == Index.SENSEX.name :
+           segment = marketfeed.BSE_FNO
+       else :
+           segment = marketfeed.NSE_FNO
+
+       symbols = [(segment, security_id)]
+       print(f"symbols {symbols}")
        feed.subscribe_symbols(symbols) 
        
        
