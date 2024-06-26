@@ -37,7 +37,6 @@ async def on_message(instance, message):
     conn.send(message)
         
 
-#print("Subscription code :"+str(subscription_code))
 
 def get_dhan_feed(connection,strikes):
     global conn
@@ -45,7 +44,6 @@ def get_dhan_feed(connection,strikes):
 
     i = 0
     for item in strikes:
-        #print(f"item--> type --> {(item['value'] is tuple)} {item['value']}")
         
         for CE in item['value']:           
             if item['index'] == Index.SENSEX.name:
@@ -78,10 +76,8 @@ def receiver(conn,loop):
    asyncio.set_event_loop(loop)
    while True:
         msg = conn.recv()
-        print(msg)
         receiver_parse_msg(msg)
         if msg == "STOP":
-            print("Stopping receiver...")
             break
 
 async def run_feed(feed):
@@ -96,7 +92,6 @@ def subscribe_symbols(security_id,index):
            segment = marketfeed.NSE_FNO
 
        symbols = [(segment, security_id)]
-       print(f"symbols {symbols}")
        feed.subscribe_symbols(symbols) 
        
        

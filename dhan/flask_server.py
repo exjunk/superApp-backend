@@ -60,13 +60,14 @@ def placeOrder():
     transaction_type = request.args.get('transaction_type')
     client_order_id = request.args.get('client_order_id')
     socket_client_id = request.args.get('socket_client_id')
-
-    data = my_app.placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id,parent_conn)
+    dhan_client_id  = request.args.get('dhan_client_id')
+    
+    data = my_app.placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id,parent_conn,dhan_client_id=dhan_client_id)
     data['client_order_id'] = client_order_id
     response = make_response(data)
 
-    order_id = 'assssad'#data['data']['orderId'] 
-    security_id =5601 #data['security_id']
+    order_id = data['data']['orderId'] 
+    security_id =data['security_id']
     checker = StatusChecker(timeout= 5,dhan= my_app.dhan,correlation_id=client_order_id,order_id=order_id,security_id=security_id,socket_id=socket_client_id,socketIo=socketio)
     checker.start()
    # response.headers['x-request-type'] = 'placeOrder'
@@ -90,7 +91,6 @@ def start_dhan_feed():
     process.daemon = True  # Daemonize process to exit with the main program
     process.start()
 
-    #print(parent_conn.recv())
     receiver_thread(parent_conn)
     
     #process.join()   # wait for process to complete and join main thread
@@ -104,9 +104,8 @@ def receiver(conn):
    while True:
        msg = conn.recv()
        if msg == "STOP":
-            print("Stopping receiver...")
             break
-       #print(f"Received--: {msg}")
+       
        send_msg_via_socket_io(msg)
        process_feed(my_app.market_feed_callback,msg) # callback to super_app 
 
@@ -115,7 +114,6 @@ def process_feed(callback,msg):
 
 @socketio.on('message')
 def handle_message(msg):
-    print(f"Message: {msg}")
     send(msg, broadcast=True)
 
 def send_msg_via_socket_io(msg):
@@ -125,6 +123,5 @@ if __name__ == '__main__' :
     my_app.init()
     start_dhan_feed()
     
-   # start_client_socket_feed()
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
    # app.run(debug=False)

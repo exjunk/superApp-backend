@@ -2,12 +2,13 @@ from dhanhq import dhanhq
 
 from config import client_token,DefaultExpiry,security_scrip_download_url,client_id
 import dhan_socket_connection as dhan_socket
-from Enums import Index
+from Enums import Index,Option_Type
 from Index_config import Index_config
 import utils as utils
 import file_downloader as file_downloader
 import db_management as db_management
 import json
+import logger
 
 dhan = dhanhq("client_id",client_token)
 price_map = {}
@@ -28,16 +29,32 @@ def get_order_status(order_id):
         return dhan.get_order_by_id(order_id=order_id)
     
     except Exception as e:
-        print(e)
         return {}
-   
 
-def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id,parent_conn):
+def fetch_index_details_from_db(client_id,index):
+    user_config = db_management.get_config_details(client_id=client_id)
+    index_risk = db_management.get_index_details(client_id=client_id,index= index)
+    
+    return user_config,index_risk
+
+
+def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_client_id,socket_client_id = None,parent_conn = None):
     import strike_selection as strike_selection
-    print("place_prder_2")
     try:
+
         index_attribute = Index_attributes.get_index_attributes(index_name)
-       
+        user_config,index_risk = fetch_index_details_from_db(client_id=dhan_client_id,index=index_name)
+        
+        trade_qty = index_attribute.lotsize
+        risk = index_attribute.index_risk
+        profit = index_attribute.profit
+
+        if len(user_config) > 0 and len (index_risk) > 0:
+            trade_qty = index_risk[0]['max_qty']
+            risk = index_risk[0]['stop_loss']
+            profit = index_risk[0]['profit']
+
+
 
         multiplier = index_attribute.multiplier
         current_price = index_attribute.current_price
@@ -47,15 +64,17 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_cl
         order_type = dhan.MARKET
         security_id = str(strike_price['SEM_SMST_SECURITY_ID'])
         strike_symbol = strike_price['SEM_CUSTOM_SYMBOL']
-        product_type = dhan.INTRA
-
+        product_type = dhan.BO #dhan.INTRA for intraday - bracket order so that I can add take profit and Stop Loss
+        
         place_order_result =  dhan.place_order(security_id=security_id,   
         exchange_segment=index_attribute.exchange_segment,
         transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
-        quantity=index_attribute.lotsize,
+        quantity=trade_qty,
         order_type=order_type,
         product_type=product_type,
         tag=correlation_id,
+        bo_profit_value=str(profit),
+        bo_stop_loss_Value=str(risk),
         price=0)
 
         # msg = {}
@@ -81,9 +100,6 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_cl
 
         db_management.insert_order(data=data,table_name='order_placement_client')
         
-
-
-        print(place_order_result)
         api_status = place_order_result.get('status')
         place_order_result['security_id'] = security_id
         if(api_status == 'success' and order_type == dhan.MARKET):
@@ -98,8 +114,6 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,socket_cl
         return place_order_result
     
     except Exception as e:
-        print("place_prder_exec")
-        print(e)
         return {}
 
 
@@ -107,7 +121,6 @@ def get_open_positions():
     try:
         return dhan.get_positions()
     except Exception as e:
-        print(e)
         return {}
 
 
@@ -124,7 +137,6 @@ def closeAllPositions(security_id,exchange_segment,transaction_type,quantity,pro
             tag=correlation_id,
             price=0)
     except Exception as e:
-        print(e)
         return {}
     
 
@@ -133,7 +145,6 @@ def getOrders():
         return dhan.get_order_list()
     
     except Exception as e:
-        print(e)
         return {}
     
         
@@ -141,7 +152,6 @@ def getFundLimit():
     try:
         return dhan.get_fund_limits()
     except Exception as e:
-        print(e)
         return {}
 
 def get_intraday_data():
@@ -157,7 +167,6 @@ def get_intraday_data():
             result.append({'security_id' : item['security_id'] , 'close' : response['data']['close'][-1]})
 
         import strike_selection as strike_selection    
-        #print(result)
         #for item in result:
         strikes = []
         strikes.append({'index' : Index.BANKNIFTY.name ,'value': strike_selection.calculate_near_strikes(current_price=result[0]['close'],index_name=Index.BANKNIFTY.name,index_multiplier=100)})  
@@ -167,19 +176,63 @@ def get_intraday_data():
         
         return strikes
     except Exception as e:
-        print(e)
         return []
 
 
+def get_trade_price_levels():
+    levels = db_management.get_trade_trigger_levels(client_id=client_id)
+    global index_trigger_bnf,index_trigger_finnifty,index_trigger_finnifty,index_trigger_sensex
 
+    index_trigger_bnf = [set(),set()]
+    index_trigger_nifty = [set(),set()]
+    index_trigger_finnifty = [set(),set()]
+    index_trigger_sensex = [set(),set()]
+    for item in levels:
+        if(item['index_name'] == Index.BANKNIFTY.name):
+            if(item['option_type'] == Option_Type.CE.name):
+                index_trigger_bnf[0].add(item['price_level']) 
+            if(item['option_type'] == Option_Type.PE.name):
+                index_trigger_bnf[1].add(item['price_level']) 
+        
+        if(item['index_name'] == Index.NIFTY.name):
+            if(item['option_type'] == Option_Type.CE.name):
+                index_trigger_nifty[0].add(item['price_level']) 
+            if(item['option_type'] == Option_Type.PE.name):
+                index_trigger_nifty[1].add(item['price_level']) 
+
+        if(item['index_name'] == Index.SENSEX.name):
+            if(item['option_type'] == Option_Type.CE.name):
+                index_trigger_sensex[0].add(item['price_level']) 
+            if(item['option_type'] == Option_Type.PE.name):
+                index_trigger_sensex[1].add(item['price_level'])  
+
+        if(item['index_name'] == Index.FINNIFTY.name):
+            if(item['option_type'] == Option_Type.CE.name):
+                index_trigger_finnifty[0].add(item['price_level']) 
+            if(item['option_type'] == Option_Type.PE.name):
+                index_trigger_finnifty[1].add(item['price_level']) 
+
+    logger.printLogs(index_trigger_bnf)
+    logger.printLogs(index_trigger_finnifty)
+    logger.printLogs(index_trigger_sensex)
+    logger.printLogs(index_trigger_nifty)
+
+
+get_trade_price_levels()
 
 def market_feed_callback(data):
-    #print(data)
     if data['security_id'] == 25 :
         exist = 'LTP' in data
         if(exist):
-            price_map[Index.BANKNIFTY.name] = data.get('LTP')
-    
+            price = data.get('LTP')
+            price_map[Index.BANKNIFTY.name] = price
+            
+            for item in index_trigger_bnf[0]:
+                diff = float(price) - item
+                if diff <= 0 and diff >= -5:
+                    placeOrder(index_name=Index.BANKNIFTY.name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id) 
+            
+
     if data['security_id'] == 13 :
         exist = 'LTP' in data
         if(exist):
@@ -197,13 +250,12 @@ def market_feed_callback(data):
 
 class Index_attributes:
         def get_index_attributes(name)->(Index_config):
-            # print(f"pricemap -- {price_map}")
              if(name == Index.BANKNIFTY.name): 
-                 return Index_config(name,100,15,'NSE_FNO',price_map[name])
+                 return Index_config(name,100,15,20,25,'NSE_FNO',price_map[name])
              if(name == Index.SENSEX.name): 
-                return Index_config(name,100,10,'BSE_FNO',price_map[name])
+                return Index_config(name,100,10,25,30,'BSE_FNO',price_map[name])
              if(name == Index.NIFTY.name): 
-                return Index_config(name,50,25,'NSE_FNO',price_map[name])
+                return Index_config(name,50,25,5,8,'NSE_FNO',price_map[name])
              if(name == Index.FINNIFTY.name): 
-                return Index_config(name,50,40,'NSE_FNO',price_map[name])
+                return Index_config(name,50,40,6,10,'NSE_FNO',price_map[name])
              

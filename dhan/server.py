@@ -3,7 +3,6 @@ import json
 
 # Called for every client connecting (after handshake)
 def new_client(client, server:WebsocketServer):
-	print("New client connected and was given id %d" % client['id'])
 	server.send_message_to_all("Hey all, a new client has joined us")
 	server.send_message(client,json.dumps({'type' : 'IDAM' , 'data' : {'socket_client_id': client['id']}}))
 

@@ -3,7 +3,6 @@ import json
 
 def generate_insert_query(data,table_name)->str:
     clean_json = json_parser.preprocess_json(data=data)
-    print(clean_json)
     data_dict = json.loads(clean_json)
 
     column_name = []

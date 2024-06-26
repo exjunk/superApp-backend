@@ -1,7 +1,6 @@
 import threading
 import time
 import Enums as enum
-import client_socket_connection as client_socket_connection
 import dhan_socket_connection as dhan_socket_connection
 import json
 
@@ -36,15 +35,12 @@ class StatusChecker:
                         start_time = time.time()
                 else:
                     #dhan_socket_connection.subScribeSymbols(feed=self.dhanFeed, security_id=self.security_id)
-                    #client_socket_connection.periodic_message(dhan_socket_connection.symbol_sub['security_id'])
-                    print(response)
                     json_data = json.dumps(response)
                     self.socket.emit("order_status",json_data)
                     self.stop_event.set()       
                 time.sleep(1)
 
         except Exception as e :
-            print(e)    
             self.stop_event.set()      
 
                      
@@ -52,7 +48,6 @@ class StatusChecker:
         try:
             self.dhan.cancel_order(self.order_id)
         except Exception as e :
-            print(e)    
             self.stop_event.set()  
 
     def start(self):

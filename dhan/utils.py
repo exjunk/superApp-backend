@@ -10,7 +10,7 @@ def get_truncated_timestamp(length):
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3]  # microseconds truncated to milliseconds
     return timestamp[:length]
 
-def generate_correlation_id(max_length=15):
+def generate_correlation_id(max_length=10):
     timestamp_length = min(10, max_length - 5)  # Adjust the length if necessary
     random_string_length = max_length - timestamp_length
     
