@@ -116,6 +116,14 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
     except Exception as e:
         return {}
 
+def add_trade_level(id,index_name,option_type,price_level,dhan_client_id):
+    db_management.add_trade_trigger_levels(id=id,index_name=index_name,option_type=option_type,level=price_level,dhanClientId=dhan_client_id)
+
+def get_trade_levels(dhan_client_id):
+    return db_management.get_trade_trigger_levels(dhan_client_id)
+
+def delete_trade_levels(dhan_client_id,index_name,level):
+    return db_management.delete_trade_trigger_levels_with_index(client_id=dhan_client_id,index_name=index_name,level=level)
 
 def get_open_positions():
     try:
@@ -227,12 +235,18 @@ def market_feed_callback(data):
             price = data.get('LTP')
             price_map[Index.BANKNIFTY.name] = price
             
-            for item in index_trigger_bnf[0]:
-                diff = float(price) - item
-                if diff <= 0 and diff >= -5:
-                    placeOrder(index_name=Index.BANKNIFTY.name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id) 
+            tempItem = set(index_trigger_bnf[0])
             
 
+            for item in tempItem:
+                diff = float(price) - item
+                logger.printLogs(f"diff --> {diff} item --> {item} item in --> {item in index_trigger_bnf[0]}")
+                if (diff <= 0 and diff >= -5) and (item in index_trigger_bnf[0]) :
+                    logger.printLogs(f"diff --> {diff}")
+                    placeOrder(index_name=Index.BANKNIFTY.name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id)
+                    index_trigger_bnf[0].discard(item)
+                    db_management.delete_trade_trigger_levels_with_index(client_id=client_id,index_name=Index.BANKNIFTY.name,level=item)
+                    
     if data['security_id'] == 13 :
         exist = 'LTP' in data
         if(exist):

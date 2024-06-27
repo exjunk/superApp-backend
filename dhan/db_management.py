@@ -63,6 +63,7 @@ def get_trade_trigger_levels(client_id):
 
         with connection.cursor(dictionary=True) as cursor:
             sql = f"SELECT * from trade_trigger where dhanClientId = {client_id}"
+            print(sql)
             cursor.execute(sql) 
             return cursor.fetchall()
 
@@ -81,5 +82,45 @@ def get_trade_trigger_levels_with_index(client_id,index_name):
 
     except Exception as e:
         connection.close()
+    
+
+def delete_trade_trigger_levels_with_index(client_id,index_name,level):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f" DELETE from trade_trigger where dhanClientId = '{client_id}' and index_name = '{index_name}' and price_level = {level}"
+            print(sql)
+            cursor.execute(sql) 
+            connection.commit()
+
+    except Exception as e:
+        connection.close()
+
+def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            if id == '' or id == None :
+                sql = f"INSERT INTO `trade_trigger` (`dhanClientId`, `index_name`, `option_type`, `price_level`) VALUES ('{dhanClientId}', '{index_name}', '{option_type}', {level})"
+            else:
+                sql = f"UPDATE `trade_trigger` SET `dhanClientId` = {dhanClientId}, `index_name` = '{index_name}', `option_type` = '{option_type}', `price_level` = {level} WHERE `id` = {id}"
+  
+              # sql = "INSERT INTO trade_trigger (dhanClientId, index_name,option_type,price_level) VALUES (%s, %s,%s,%s)", (dhanClientId, index_name,option_type,level)
+            print(sql)
+            cursor.execute(sql) 
+            connection.commit()
+            
+
+    except Exception as e:
+        print(e)
+        connection.close()
+
+
+
+
 
 

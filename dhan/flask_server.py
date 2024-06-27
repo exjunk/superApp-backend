@@ -6,6 +6,7 @@ from flask_socketio import SocketIO, send
 import multiprocessing
 import threading
 from status_checker import StatusChecker
+import json
 
 api = "127.0.0.1:8000"
 app = Flask(__name__)
@@ -72,6 +73,41 @@ def placeOrder():
     checker.start()
    # response.headers['x-request-type'] = 'placeOrder'
     return response
+
+@app.route('/addLevels', methods=["GET"])
+def add_trade_level():
+    index_name = request.args.get('index_name')
+    option_type = request.args.get('option_type')
+    price_level = request.args.get('price_level')
+    dhan_client_id  = request.args.get('dhan_client_id')
+    id = request.args.get('id');
+
+    my_app.add_trade_level(id =id,index_name = index_name,option_type= option_type,price_level=price_level,dhan_client_id = dhan_client_id)
+    response = {}
+    response["data"] = {"result":"success"}
+    data =  make_response(json.dumps(response));
+    
+    return data
+
+
+@app.route('/getLevels', methods=["GET"])
+def get_trade_level():
+    dhan_client_id  = request.args.get('dhan_client_id')
+    data = my_app.get_trade_levels(dhan_client_id=dhan_client_id)
+    response = {}
+    response["data"] = data
+    return make_response(json.dumps(response))
+
+@app.route('/deleteLevels', methods=["GET"])
+def delete_trade_level():
+    index_name = request.args.get('index_name')
+    price_level = request.args.get('price_level')
+    dhan_client_id  = request.args.get('dhan_client_id')
+
+    my_app.delete_trade_levels(dhan_client_id=dhan_client_id,index_name=index_name,level=price_level)
+    response = {}
+    response["data"] = {"result":"success"}
+    return make_response(json.dumps(response))
 
 @app.route('/fundLimits', methods=["GET"])
 def fundLimit():
