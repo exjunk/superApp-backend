@@ -62,16 +62,20 @@ def placeOrder():
     client_order_id = request.args.get('client_order_id')
     socket_client_id = request.args.get('socket_client_id')
     dhan_client_id  = request.args.get('dhan_client_id')
+    product_type = request.args.get('product_type')
     
-    data = my_app.placeOrder(index_name,option_type,transaction_type,client_order_id,socket_client_id,parent_conn,dhan_client_id=dhan_client_id)
+    data = my_app.placeOrder(index_name=index_name,option_type=option_type,transaction_type=transaction_type,dhan_client_id=dhan_client_id,client_order_id=client_order_id,product_type=product_type)
+   
+    print(data)
+    # if not data and not data['data']['orderId']:
+
+    #     order_id = data['data']['orderId'] 
+    #     security_id =data['security_id']
+    #     checker = StatusChecker(timeout= 5,dhan= my_app.dhan,correlation_id=client_order_id,order_id=order_id,security_id=security_id,socket_id=socket_client_id,socketIo=socketio)
+    #     checker.start()
+   # response.headers['x-request-type'] = 'placeOrder'
     data['client_order_id'] = client_order_id
     response = make_response(data)
-
-    order_id = data['data']['orderId'] 
-    security_id =data['security_id']
-    checker = StatusChecker(timeout= 5,dhan= my_app.dhan,correlation_id=client_order_id,order_id=order_id,security_id=security_id,socket_id=socket_client_id,socketIo=socketio)
-    checker.start()
-   # response.headers['x-request-type'] = 'placeOrder'
     return response
 
 @app.route('/addLevels', methods=["GET"])
@@ -82,9 +86,9 @@ def add_trade_level():
     dhan_client_id  = request.args.get('dhan_client_id')
     id = request.args.get('id');
 
-    my_app.add_trade_level(id =id,index_name = index_name,option_type= option_type,price_level=price_level,dhan_client_id = dhan_client_id)
+    result = my_app.add_trade_level(id =id,index_name = index_name,option_type= option_type,price_level=price_level,dhan_client_id = dhan_client_id)
     response = {}
-    response["data"] = {"result":"success"}
+    response["data"] = result
     data =  make_response(json.dumps(response));
     
     return data
