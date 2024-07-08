@@ -1,9 +1,9 @@
 import mysql.connector
 import query_manager as query_manager
 # Replace with your credentials
-hostname = "localhost"
-username = "root"
-password = ""
+hostname = "maria-db-super-app.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
+username = "exjunk_in"
+password = "exjunk123_rds"
 database_name = "super_app"
 
 
