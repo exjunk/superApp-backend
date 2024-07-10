@@ -1,0 +1,3 @@
+
+// url to configure flask app for aws EC2
+https://berkoc.medium.com/how-to-deploy-your-flask-app-to-aws-ec2-instance-with-nginx-gunicorn-b734df606a14
