@@ -165,3 +165,7 @@ if __name__ == '__main__' :
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
    # app.run(debug=False)
+def main():
+    my_app.init()
+    start_dhan_feed()
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
