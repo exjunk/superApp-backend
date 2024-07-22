@@ -121,6 +121,9 @@ def fundLimit():
 def flask_server():
     return 'hello_world'
 
+@app.route('/health')
+def health():
+    return 'OK', 200
 
 def start_dhan_feed():
     global parent_conn

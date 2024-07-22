@@ -6,8 +6,8 @@ import query_manager as query_manager
 # password = ""
 # database_name = "super_app"
 
-hostname = "maria-db-super-app.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
-username = "exjunk_in"
+hostname = "maria-db-debian.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
+username = "exjunk"
 password = "exjunk123_rds"
 database_name = "super_app"
 

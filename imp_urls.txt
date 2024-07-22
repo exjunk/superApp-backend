@@ -1,3 +1,63 @@
 
 // url to configure flask app for aws EC2
 https://berkoc.medium.com/how-to-deploy-your-flask-app-to-aws-ec2-instance-with-nginx-gunicorn-b734df606a14
+
+// configuring nginx / gunicorn / with debian 
+https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
+
+
+// generate CERT file using letsencrypt for skydevapps.com using dns record adding on cloudflare
+
+SSL Certificate Generation for EC2 Instance using Let's Encrypt and Cloudflare DNS
+
+1. DNS Configuration (Cloudflare):
+   - Log into Cloudflare account
+   - Select domain: skydevapps.com
+   - Go to DNS settings
+
+2. Install Certbot and Cloudflare plugin on EC2:
+   sudo apt install certbot python3-certbot-dns-cloudflare
+
+3. Create Cloudflare API Token:
+   - Log into Cloudflare account
+   - Go to "My Profile" > "API Tokens"
+   - Click "Create Token" > "Create Custom Token"
+   - Configure:
+     - Name: "Certbot DNS Authentication"
+     - Permissions: 
+       Zone - DNS - Edit
+       Zone - Zone - Read
+     - Zone Resources: Include - Specific zone - skydevapps.com
+   - Create token and copy value
+
+4. Create Cloudflare credentials file:
+   mkdir -p ~/.secrets/certbot/
+   echo "dns_cloudflare_api_token = your_api_token_here" > ~/.secrets/certbot/cloudflare.ini
+   chmod 600 ~/.secrets/certbot/cloudflare.ini
+
+5. Generate/renew certificate:
+   sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials ~/.secrets/certbot/cloudflare.ini -d skydevapps.com
+
+6. Set up auto-renewal:
+   echo "0 0,12 * * * root python -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew --dns-cloudflare --dns-cloudflare-credentials /root/.secrets/certbot/cloudflare.ini -q" | sudo tee -a /etc/crontab > /dev/null
+
+7. Configure web server (example for Nginx):
+   server {
+       listen 443 ssl;
+       server_name skydevapps.com;
+       ssl_certificate /etc/letsencrypt/live/skydevapps.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/skydevapps.com/privkey.pem;
+       # ... rest of your configuration
+   }
+
+8. Restart web server:
+   sudo systemctl restart nginx
+
+9. Check certificate expiration:
+   openssl x509 -in /etc/letsencrypt/live/skydevapps.com/cert.pem -noout -dates
+
+Notes:
+- Certificates are valid for 90 days
+- Automatic renewal occurs 30 days before expiration
+- Keep API Token secure
+- Consider setting up monitoring for certificate expiration
