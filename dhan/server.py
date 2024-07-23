@@ -1,5 +1,4 @@
 from websocket_server import WebsocketServer
-from logger import logger
 import json
 
 # Called for every client connecting (after handshake)
@@ -10,14 +9,14 @@ def new_client(client, server:WebsocketServer):
 
 # Called for every client disconnecting
 def client_left(client, server):
-	logger.info("Client(%d) disconnected" % client['id'])
+	print("Client(%d) disconnected" % client['id'])
 
 
 # Called when a client sends a message
 def message_received(client, server, message):
 	if len(message) > 200:
 		message = message[:200]+'..'
-	logger.info("Client(%d) said: %s" % (client['id'], message))
+	print("Client(%d) said: %s" % (client['id'], message))
 
 def send_message(message,client_id):
 	client = active_server.client_dict[client_id]
