@@ -11,7 +11,7 @@ import json
 api = "127.0.0.1:8000"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
-socketio = SocketIO(app, message_queue='amqp://guest:guest@localhost:5672/',cors_allowed_origins = "*")
+socketio = SocketIO(app, async_mode='eventlet',message_queue='amqp://guest:guest@localhost:5672/',cors_allowed_origins = "*")
 cors = CORS(app)
 
 @app.after_request
