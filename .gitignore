@@ -4,3 +4,4 @@ __pycache__
 dhan/_pycache
 super_app_env
 log/*.log
+dhan/log/*.log
