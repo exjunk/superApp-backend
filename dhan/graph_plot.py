@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
 import utils as utils
+from logger import logger
 
 
 def init_plot():
@@ -33,4 +34,4 @@ def update_plot(data,timestamps,prices):
     plt.draw()
     plt.pause(0.1)  # Pause to avoid overwhelming the UI
   except Exception as e:
-    print(f"Error processing data: {e}")
+    logger.info(f"Error processing data: {e}")
