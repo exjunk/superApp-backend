@@ -7,6 +7,7 @@ import multiprocessing
 import threading
 from status_checker import StatusChecker
 import json
+from logger import logger
 
 api = "127.0.0.1:8000"
 app = Flask(__name__)
@@ -66,7 +67,7 @@ def placeOrder():
     
     data = my_app.placeOrder(index_name=index_name,option_type=option_type,transaction_type=transaction_type,dhan_client_id=dhan_client_id,client_order_id=client_order_id,product_type=product_type)
    
-    print(data)
+    logger.info(data)
     # if not data and not data['data']['orderId']:
 
     #     order_id = data['data']['orderId'] 
@@ -168,7 +169,7 @@ if __name__ == '__main__' :
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
    # app.run(debug=False)
+   
 def main():
     my_app.init()
     start_dhan_feed()
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
