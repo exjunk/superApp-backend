@@ -6,14 +6,14 @@ class DefaultExpiry:
     current = True
 
 # Replace with your credentials
-# hostname = "localhost"
-# username = "root"
-# password = ""
-# database_name = "super_app"
-
-hostname = "maria-db-debian.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
-username = "exjunk"
-password = "exjunk123_rds"
+hostname = "localhost"
+username = "root"
+password = ""
 database_name = "super_app"
+
+#hostname = "maria-db-debian.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
+#username = "exjunk"
+#password = "exjunk123_rds"
+#database_name = "super_app"
 
 
