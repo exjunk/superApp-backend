@@ -10,6 +10,7 @@ import db_management as db_management
 import json
 import logger
 import graph_plot as graph_plot
+from logger import logger
 
 dhan = dhanhq("client_id",client_token)
 price_map = {}
@@ -67,8 +68,8 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         security_id = str(strike_price['SEM_SMST_SECURITY_ID'])
         strike_symbol = strike_price['SEM_CUSTOM_SYMBOL']
         
-        #print(f"security_id --> {security_id}")
-        #print(price_map)
+        #logger.info(f"security_id --> {security_id}")
+        #logger.info(price_map)
 
         price_diff = 0.0
         if index_name == Index.BANKNIFTY.name:
@@ -84,7 +85,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         order_type = dhan.MARKET
         
         place_order_result = {}
-        print(f"current_price {current_price} -- > order_type {order_type} --> product_type {product_type}")
+        logger.info(f"current_price {current_price} -- > order_type {order_type} --> product_type {product_type}")
         if current_price != None:
             if product_type == dhan.BO:
                 order_type = dhan.LIMIT
@@ -172,7 +173,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
             return place_order_result
     
     except Exception as e:
-        print(e)
+        logger.info(e)
         return {}
 
 def get_open_positions():
@@ -237,11 +238,11 @@ def get_intraday_data():
         return []
 
 def add_trade_level(id,index_name,option_type,price_level,dhan_client_id):
-    print("add_trade_level")
+    logger.info("add_trade_level")
     last_row = db_management.add_trade_trigger_levels(id=id,index_name=index_name,option_type=option_type,level=price_level,dhanClientId=dhan_client_id)
-    print("db_management")
+    logger.info("db_management")
     get_trade_price_levels()
-    print("get_trade_price_levels")
+    logger.info("get_trade_price_levels")
     return last_row
 
 def get_trade_levels(dhan_client_id):
@@ -284,10 +285,10 @@ def get_trade_price_levels():
             if(item['option_type'] == Option_Type.PE.name):
                 index_trigger_finnifty[1].add(item['price_level']) 
 
-    logger.printLogs(index_trigger_bnf)
-    logger.printLogs(index_trigger_finnifty)
-    logger.printLogs(index_trigger_sensex)
-    logger.printLogs(index_trigger_nifty)
+    logger.info(index_trigger_bnf)
+    logger.info(index_trigger_finnifty)
+    logger.info(index_trigger_sensex)
+    logger.info(index_trigger_nifty)
 
 
 get_trade_price_levels()
@@ -295,7 +296,7 @@ get_trade_price_levels()
 def market_feed_callback(data):
     
     if data['security_id'] == 25 :
-        #print(data)
+        #logger.info(data)
         #ltt = 'LTT' in data
         exist = 'LTP' in data
         if(exist):
@@ -307,7 +308,7 @@ def market_feed_callback(data):
             level_trigger_logic(index_name=Index.BANKNIFTY.name,price=price,diff_CE=-5,diff_PE=5,index_trigger=index_trigger_bnf)
                     
     if data['security_id'] == 13 :
-        #print(data)
+        #logger.info(data)
         exist = 'LTP' in data
         if(exist):
             price = data.get('LTP')
@@ -349,7 +350,7 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
         diff = float(price) - item
         #logger.printLogs(f"index_name = {index_name} --> diff CE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[0]}")
         if (diff <= 0 and diff >= diff_CE) and (item in index_trigger[0]) :
-            logger.printLogs(f"index_name CE = {index_name} --> diff --> {diff}")
+            logger.info(f"index_name CE = {index_name} --> diff --> {diff}")
                            
             placeOrder(index_name=index_name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type)
             index_trigger[0].discard(item)
@@ -359,7 +360,7 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
         diff = float(price) - item
        # logger.printLogs(f"index_name = {index_name} --> diff PE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[1]}")                 
         if (diff >= 0 and diff <= diff_PE) and (item in index_trigger[1]) :
-            logger.printLogs(f"index_name PE = {index_name} --> diff --> {diff}")
+            logger.info(f"index_name PE = {index_name} --> diff --> {diff}")
             placeOrder(index_name=index_name,option_type=Option_Type.PE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type)
             index_trigger[1].discard(item)
             db_management.delete_trade_trigger_levels_with_index(client_id=client_id,index_name=index_name,level=item)

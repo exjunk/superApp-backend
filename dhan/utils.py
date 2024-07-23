@@ -2,6 +2,7 @@ import random
 import string
 import time as time
 from datetime import datetime
+from logger import logger
 
 def generate_random_string(length):
     letters_and_digits = string.ascii_letters + string.digits
@@ -77,7 +78,7 @@ def get_current_time_stamp_and_date():
    # Get the current timestamp
     now = datetime.now()
     curr_ta = now.microsecond()
-    print(f"timstamp = {curr_ta}")
+    logger.info(f"timstamp = {curr_ta}")
 
     # Convert the timestamp to the desired format
     formatted_time = now.strftime('%d-%m-%Y %H:%M:%S')
