@@ -14,6 +14,7 @@ import threading
 from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
 
 from websocket_server.thread import WebsocketServerThread
+from logger import file_logger
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -144,19 +145,19 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
     def _run_forever(self, threaded):
         cls_name = self.__class__.__name__
         try:
-            logger.info("Listening on port %d for clients.." % self.port)
+            file_logger.info("Listening on port %d for clients.." % self.port)
             if threaded:
                 self.daemon = True
                 self.thread = WebsocketServerThread(target=super().serve_forever, daemon=True, logger=logger)
-                logger.info(f"Starting {cls_name} on thread {self.thread.getName()}.")
+                file_logger.info(f"Starting {cls_name} on thread {self.thread.getName()}.")
                 self.thread.start()
             else:
                 self.thread = threading.current_thread()
-                logger.info(f"Starting {cls_name} on main thread.")
+                file_logger.info(f"Starting {cls_name} on main thread.")
                 super().serve_forever()
         except KeyboardInterrupt:
             self.server_close()
-            logger.info("Server terminated.")
+            file_logger.info("Server terminated.")
         except Exception as e:
             logger.error(str(e), exc_info=True)
             sys.exit(1)
@@ -295,7 +296,7 @@ class WebSocketHandler(StreamRequestHandler):
             b1, b2 = self.read_bytes(2)
         except SocketError as e:  # to be replaced with ConnectionResetError for py3
             if e.errno == errno.ECONNRESET:
-                logger.info("Client closed connection.")
+                file_logger.info("Client closed connection.")
                 self.keep_alive = 0
                 return
             b1, b2 = 0, 0
@@ -308,7 +309,7 @@ class WebSocketHandler(StreamRequestHandler):
         payload_length = b2 & PAYLOAD_LEN
 
         if opcode == OPCODE_CLOSE_CONN:
-            logger.info("Client asked to close connection.")
+            file_logger.info("Client asked to close connection.")
             self.keep_alive = 0
             return
         if not masked:
