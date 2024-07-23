@@ -3,7 +3,6 @@ from config import client_token,client_id
 import threading
 import asyncio
 from Enums import Index
-from logger import logger
 
 
 # Add your Dhan Client ID and Access Token
@@ -30,10 +29,10 @@ subscription_code = marketfeed.Ticker
 # Quote - Quote Data
 # Depth - Market Depth
 async def on_connect(instance):
-    logger.info("Connected to websocket")
+    print("Connected to websocket")
 
 async def on_message(instance, message):
-  #  logger.info("Received:", message)
+  #  print("Received:", message)
   # ticker_data = Ticker_data(**json.loads(str(message)))
     conn.send(message)
         

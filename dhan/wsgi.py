@@ -1,6 +1,5 @@
-from flask_server import app,socketio,main
+from flask_server import app,socketio
 
 if __name__ == "__main__":
-    main()
     socketio.run(app)
     #app.run()

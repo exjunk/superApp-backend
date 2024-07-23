@@ -1,16 +1,15 @@
 import mysql.connector
 import query_manager as query_manager
-from logger import logger
 # Replace with your credentials
-hostname = "localhost"
-username = "root"
-password = ""
-database_name = "super_app"
+# hostname = "localhost"
+# username = "root"
+# password = ""
+# database_name = "super_app"
 
-#hostname = "maria-db-super-app.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
-#username = "exjunk_in"
-#password = "exjunk123_rds"
-#database_name = "super_app"
+hostname = "maria-db-debian.c3a8606g6l1i.ap-south-1.rds.amazonaws.com"
+username = "exjunk"
+password = "exjunk123_rds"
+database_name = "super_app"
 
 
 
@@ -30,9 +29,9 @@ def insert_order(data,table_name):
             cursor.execute(sql)         
         connection.commit()   
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -52,9 +51,9 @@ def get_config_details(client_id):
             return cursor.fetchall()
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -72,9 +71,9 @@ def get_index_details(client_id,index):
             return cursor.fetchall()
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -88,14 +87,14 @@ def get_trade_trigger_levels(client_id):
 
         with connection.cursor(dictionary=True) as cursor:
             sql = f"SELECT * from trade_trigger where dhanClientId = {client_id}"
-            #logger.info(sql)
+            #print(sql)
             cursor.execute(sql) 
             return cursor.fetchall()
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -112,9 +111,9 @@ def get_trade_trigger_levels_with_index(client_id,index_name):
             return cursor.fetchall()
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -128,14 +127,14 @@ def delete_trade_trigger_levels_with_index(client_id,index_name,level):
 
         with connection.cursor(dictionary=True) as cursor:
             sql = f" DELETE from trade_trigger where dhanClientId = '{client_id}' and index_name = '{index_name}' and price_level = {level}"
-            #logger.info(sql)
+            #print(sql)
             cursor.execute(sql) 
             connection.commit()
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {e}")
+        print(f"Exception: {e}")
     finally:
         if connection.is_connected():
             connection.close()
@@ -153,7 +152,7 @@ def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level):
                 sql = f"UPDATE `trade_trigger` SET `dhanClientId` = {dhanClientId}, `index_name` = '{index_name}', `option_type` = '{option_type}', `price_level` = {level} WHERE `id` = {id}"
   
               # sql = "INSERT INTO trade_trigger (dhanClientId, index_name,option_type,price_level) VALUES (%s, %s,%s,%s)", (dhanClientId, index_name,option_type,level)
-            logger.info(sql)
+            print(sql)
             
             cursor.execute(sql) 
             connection.commit()
@@ -168,13 +167,13 @@ def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level):
             # If lastrowid is 0, it means an existing row was updated, not inserted.
                 cursor.execute("SELECT * FROM trade_trigger WHERE id = %s", (id,))
                 last_row = cursor.fetchone()
-        logger.info(f"LAST_ROW --> {last_row}")
+        print(f"LAST_ROW --> {last_row}")
         return last_row
 
     except mysql.connector.Error as err:
-        logger.info(f"mysql.connector.Error: {err}")
+        print(f"mysql.connector.Error: {err}")
     except Exception as e:
-        logger.info(f"Exception: {err}")
+        print(f"Exception: {err}")
     finally:
         if connection.is_connected():
             connection.close()
