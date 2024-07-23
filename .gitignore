@@ -3,3 +3,4 @@ __pycache__
 *.csv
 dhan/_pycache
 super_app_env
+log/*.log
