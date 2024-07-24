@@ -173,3 +173,6 @@ if __name__ == '__main__' :
 def main():
     my_app.init()
     start_dhan_feed()
+
+def init_super_app():
+    my_app.init()
