@@ -22,3 +22,55 @@
 24-07 00:30:42.587 - global_logger - INFO - [set(), set()]
 24-07 00:30:44.035 - global_logger - INFO - Connected to websocket
 24-07 00:30:44.037 - global_logger - INFO - Connected to websocket
+31-07 10:44:29.702 - global_logger - INFO - [set(), set()]
+31-07 10:44:29.702 - global_logger - INFO - [set(), set()]
+31-07 10:44:29.702 - global_logger - INFO - [set(), set()]
+31-07 10:44:29.708 - global_logger - INFO - [set(), set()]
+31-07 10:44:30.018 - global_logger - INFO - Renamed security.csv to security.csv.temp
+31-07 10:44:33.142 - global_logger - INFO - Downloaded new file to security.csv
+31-07 10:44:33.142 - global_logger - INFO - Deleted temporary file security.csv.temp
+31-07 10:44:34.395 - global_logger - INFO - [set(), set()]
+31-07 10:44:34.395 - global_logger - INFO - [set(), set()]
+31-07 10:44:34.395 - global_logger - INFO - [set(), set()]
+31-07 10:44:34.395 - global_logger - INFO - [set(), set()]
+31-07 10:44:34.703 - global_logger - INFO - File security.csv was already downloaded today. No action taken.
+31-07 10:45:51.787 - global_logger - INFO - [set(), set()]
+31-07 10:45:51.787 - global_logger - INFO - [set(), set()]
+31-07 10:45:51.788 - global_logger - INFO - [set(), set()]
+31-07 10:45:51.788 - global_logger - INFO - [set(), set()]
+31-07 10:45:52.102 - global_logger - INFO - File security.csv was already downloaded today. No action taken.
+31-07 10:45:53.492 - global_logger - INFO - [set(), set()]
+31-07 10:45:53.492 - global_logger - INFO - [set(), set()]
+31-07 10:45:53.492 - global_logger - INFO - [set(), set()]
+31-07 10:45:53.492 - global_logger - INFO - [set(), set()]
+31-07 10:46:00.470 - global_logger - INFO - Connected to websocket
+31-07 10:46:00.486 - global_logger - INFO - Connected to websocket
+31-07 10:48:34.794 - global_logger - INFO - [set(), set()]
+31-07 10:48:34.794 - global_logger - INFO - [set(), set()]
+31-07 10:48:34.794 - global_logger - INFO - [set(), set()]
+31-07 10:48:34.794 - global_logger - INFO - [set(), set()]
+31-07 10:48:35.108 - global_logger - INFO - File security.csv was already downloaded today. No action taken.
+31-07 10:48:36.346 - global_logger - INFO - [set(), set()]
+31-07 10:48:36.346 - global_logger - INFO - [set(), set()]
+31-07 10:48:36.351 - global_logger - INFO - [set(), set()]
+31-07 10:48:36.351 - global_logger - INFO - [set(), set()]
+31-07 10:48:42.067 - global_logger - INFO - Connected to websocket
+31-07 10:48:42.067 - global_logger - INFO - Connected to websocket
+31-07 10:55:21.675 - global_logger - INFO - add_trade_level
+31-07 10:55:21.678 - global_logger - INFO - INSERT INTO `trade_trigger` (`dhanClientId`, `index_name`, `option_type`, `price_level`) VALUES ('1100323569', 'BANKNIFTY', 'PE', 51600)
+31-07 10:55:21.684 - global_logger - INFO - LAST_ROW --> {'dhanClientId': '1100323569', 'id': 128, 'index_name': 'BANKNIFTY', 'option_type': 'PE', 'price_level': 51600.0}
+31-07 10:55:21.684 - global_logger - INFO - db_management
+31-07 10:55:21.687 - global_logger - INFO - [set(), {51600.0}]
+31-07 10:55:21.687 - global_logger - INFO - [set(), set()]
+31-07 10:55:21.687 - global_logger - INFO - [set(), set()]
+31-07 10:55:21.687 - global_logger - INFO - [set(), set()]
+31-07 10:55:21.688 - global_logger - INFO - get_trade_price_levels
+31-07 10:57:51.583 - global_logger - INFO - add_trade_level
+31-07 10:57:51.585 - global_logger - INFO - INSERT INTO `trade_trigger` (`dhanClientId`, `index_name`, `option_type`, `price_level`) VALUES ('1100323569', 'BANKNIFTY', 'CE', 51530)
+31-07 10:57:51.595 - global_logger - INFO - LAST_ROW --> {'dhanClientId': '1100323569', 'id': 129, 'index_name': 'BANKNIFTY', 'option_type': 'CE', 'price_level': 51530.0}
+31-07 10:57:51.596 - global_logger - INFO - db_management
+31-07 10:57:51.596 - global_logger - INFO - [{51530.0}, {51600.0}]
+31-07 10:57:51.596 - global_logger - INFO - [set(), set()]
+31-07 10:57:51.596 - global_logger - INFO - [set(), set()]
+31-07 10:57:51.596 - global_logger - INFO - [set(), set()]
+31-07 10:57:51.596 - global_logger - INFO - get_trade_price_levels

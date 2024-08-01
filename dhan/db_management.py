@@ -1,6 +1,7 @@
 import mysql.connector
 import query_manager as query_manager
 from config import hostname,username,password,database_name
+from logger import logger
 
 
 def db_connection():

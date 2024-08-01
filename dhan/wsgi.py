@@ -1,6 +1,11 @@
 from flask_server import app,socketio,main
 
-if __name__ == "__main__":
+def create_app():
     main()
-    socketio.run(app)
+    return app
+
+application = create_app()
+
+if __name__ == "__main__":
+    socketio.run(application)
     #app.run()
