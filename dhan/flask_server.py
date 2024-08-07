@@ -35,6 +35,29 @@ def getAllOpenOrders():
     data =  make_response(json.dumps(response));
     return data
 
+@app.route('/cancelOpenOrders', methods=["GET"])
+def cancelOpenOrders():
+    order_id = request.args.get('order_id')
+    result = my_app.cancel_open_order(order_id=order_id)
+    print(result)
+    response = {}
+    response["data"] = result
+    data =  make_response(json.dumps(response));
+    return data
+
+@app.route('/modifyOpenOrders', methods=["GET"])
+def modifyOpenOrders():
+    order_id = request.args.get('order_id')
+    quantity =  request.args.get('quantity')
+    price = request.args.get('price')
+    
+    result = my_app.modify_open_order(order_id=order_id,price=price,quantity=quantity)
+    print(result)
+    response = {}
+    response["data"] = result
+    data =  make_response(json.dumps(response));
+    return data
+
 @app.route('/orderstatus', methods=["GET"])
 def get_order_status():
     order_id = request.args.get('order_id')

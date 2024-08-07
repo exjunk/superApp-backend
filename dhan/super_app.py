@@ -221,6 +221,26 @@ def get_open_orders():
         return {}
     
         
+def cancel_open_order(order_id):
+    try:
+        result = dhan.cancel_order(order_id=order_id)
+        return result
+        
+    except Exception as e:
+        logger.info(e)
+        return {}
+    
+    
+def modify_open_order(order_id,quantity,price):
+    try:
+        result = dhan.modify_order(order_id=order_id,quantity=quantity,price=price)
+        return result
+        
+    except Exception as e:
+        logger.info(e)
+        return {}
+    
+                
 def getFundLimit():
     try:
         return dhan.get_fund_limits()
