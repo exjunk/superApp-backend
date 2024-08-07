@@ -205,6 +205,20 @@ def getOrders():
     
     except Exception as e:
         return {}
+
+def get_open_orders():
+    try:
+        order_list = dhan.get_order_list()
+        if "data" in order_list:
+            pending_orders = [order for order in order_list["data"] if order["orderStatus"] == "TRADED"]
+            logger.info(pending_orders)
+            return pending_orders
+        else:
+            return {}
+        
+    except Exception as e:
+        logger.info(e)
+        return {}
     
         
 def getFundLimit():
@@ -232,7 +246,7 @@ def get_intraday_data():
         strikes.append({'index' : Index.NIFTY.name ,'value': strike_selection.calculate_near_strikes(current_price=result[1]['close'],index_name=Index.NIFTY.name,index_multiplier=50)} )
         strikes.append({'index' : Index.SENSEX.name,'value' :strike_selection.calculate_near_strikes(current_price=result[2]['close'],index_name=Index.SENSEX.name,index_multiplier=100)})  
         strikes.append({'index' : Index.FINNIFTY.name,'value' :strike_selection.calculate_near_strikes(current_price=result[3]['close'],index_name=Index.FINNIFTY.name,index_multiplier=50)} )
-        
+        logger.info(strikes)
         return strikes
     except Exception as e:
         return []

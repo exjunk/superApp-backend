@@ -74,3 +74,20 @@
 31-07 10:57:51.596 - global_logger - INFO - [set(), set()]
 31-07 10:57:51.596 - global_logger - INFO - [set(), set()]
 31-07 10:57:51.596 - global_logger - INFO - get_trade_price_levels
+06-08 11:37:51.293 - global_logger - INFO - [set(), set()]
+06-08 11:37:51.296 - global_logger - INFO - [set(), set()]
+06-08 11:37:51.298 - global_logger - INFO - [set(), set()]
+06-08 11:37:51.299 - global_logger - INFO - [set(), set()]
+06-08 11:38:30.175 - global_logger - INFO - [set(), set()]
+06-08 11:38:30.179 - global_logger - INFO - [set(), set()]
+06-08 11:38:30.179 - global_logger - INFO - [set(), set()]
+06-08 11:38:30.179 - global_logger - INFO - [set(), set()]
+06-08 11:38:32.032 - global_logger - INFO - Renamed security.csv to security.csv.temp
+06-08 11:38:41.567 - global_logger - INFO - Downloaded new file to security.csv
+06-08 11:38:41.588 - global_logger - INFO - Deleted temporary file security.csv.temp
+06-08 11:38:50.225 - global_logger - INFO - [set(), set()]
+06-08 11:38:50.226 - global_logger - INFO - [set(), set()]
+06-08 11:38:50.228 - global_logger - INFO - [set(), set()]
+06-08 11:38:50.228 - global_logger - INFO - [set(), set()]
+06-08 11:39:30.356 - global_logger - INFO - Connected to websocket
+06-08 11:39:30.356 - global_logger - INFO - Connected to websocket

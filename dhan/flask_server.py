@@ -27,6 +27,14 @@ def after_request(response):
 def getAllOrders():
     return my_app.getOrders()
 
+@app.route('/openOrders', methods=["GET"])
+def getAllOpenOrders():
+    result = my_app.get_open_orders()
+    response = {}
+    response["data"] = result
+    data =  make_response(json.dumps(response));
+    return data
+
 @app.route('/orderstatus', methods=["GET"])
 def get_order_status():
     order_id = request.args.get('order_id')
