@@ -11,8 +11,10 @@ import json
 import logger
 import graph_plot as graph_plot
 from logger import logger
+import risk_manager
 
 dhan = dhanhq("client_id",client_token)
+risk_manager.initialize_risk_manager(dhan, client_id)
 price_map = {}
 timestamps,prices = graph_plot.init_plot()
 
@@ -35,32 +37,63 @@ def get_order_status(order_id):
         return {}
 
 def fetch_index_details_from_db(client_id,index):
-    user_config = db_management.get_config_details(client_id=client_id)
-    index_risk = db_management.get_index_details(client_id=client_id,index= index)
+    kill_switch_rules = db_management.get_kill_switch_rules(client_id=client_id)
+    index_rules = db_management.get_index_rules(client_id=client_id,index=index)
     
-    return user_config,index_risk
+    return kill_switch_rules,index_rules
 
 
-def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_client_id,product_type,socket_client_id = None,parent_conn = None):
+def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_client_id,product_type,socket_client_id = None,parent_conn = None,confidence = None):
+    if not risk_manager.check_risk():
+        logger.warning("Order placement halted due to risk management rules.")
+        return {}
+    
     import strike_selection as strike_selection
     try:
-
-        index_attribute = Index_attributes.get_index_attributes(index_name)
-        user_config,index_risk = fetch_index_details_from_db(client_id=dhan_client_id,index=index_name)
         
-        trade_qty = index_attribute.lotsize
-        risk = index_attribute.index_risk
-        profit = index_attribute.profit
+        index_config = Index_attributes.get_index_attributes(index_name)
+        
+        kill_switch_rules,index_rules = fetch_index_details_from_db(client_id=dhan_client_id)
+        
+        trade_qty = index_config.lotsize
+        default_qty = index_config.lotsize
+        risk = index_config.index_risk
+        profit = index_config.profit
+        exchange = index_config.exchange_segment
+        trading_lot = 1
+        index_allowed_to_trade = 0
 
-        if len(user_config) > 0 and len (index_risk) > 0:
-            trade_qty = index_risk[0]['max_qty']
-            risk = index_risk[0]['stop_loss']
-            profit = index_risk[0]['profit']
+        if  len (index_rules) > 0:
+            trading_lot = index_rules[0]['trading_lot']
+            default_qty = index_rules[0]['default_qty']
+            trade_qty = default_qty * trading_lot
+            risk = index_rules[0]['stop_loss']
+            profit = index_rules[0]['profit']
+            exchange = index_rules[0]['exchange']
+            index_allowed_to_trade = index_rules[0]['trading_enabled']
+        
+        if index_allowed_to_trade != 1 :
+            logger.info(f"{index_name} is not allowed to trade")
+            return {}
+            
+        if confidence != None:
+            import math
+            
+            if confidence == 0.25 :
+                profit = risk
+                trade_qty = default_qty * math.ceil(trading_lot/4)
+            
+            if confidence == 0.5 :
+                trade_qty = default_qty * math.ceil(trading_lot/2)     
 
-
-
-        multiplier = index_attribute.multiplier
-        current_price = index_attribute.current_price
+            if confidence == 0.75 :
+                profit = profit * 1.5 
+             
+            if confidence == 1 :
+                profit = profit * 2.5
+                   
+        multiplier = index_config.multiplier
+        current_price = index_config.current_price
         
         strike_price = strike_selection.calculate_trading_strike(DefaultExpiry.current,index_name,current_price,multiplier,option_type)
         correlation_id = client_order_id #utils.generate_correlation_id(max_length=15)
@@ -91,7 +124,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 order_type = dhan.LIMIT
                 
                 place_order_result =  dhan.place_order(security_id=security_id,   
-                exchange_segment=index_attribute.exchange_segment,
+                exchange_segment=exchange,
                 transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
                 quantity=trade_qty,
                 product_type=product_type,
@@ -105,7 +138,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 order_type = dhan.MARKET
                 
                 place_order_result =  dhan.place_order(security_id=security_id,   
-                exchange_segment=index_attribute.exchange_segment,
+                exchange_segment=exchange,
                 transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
                 quantity=trade_qty,
                 order_type=order_type,
@@ -118,7 +151,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 order_type = dhan.MARKET
                 
                 place_order_result =  dhan.place_order(security_id=security_id,   
-                exchange_segment=index_attribute.exchange_segment,
+                exchange_segment=exchange,
                 transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
                 quantity=trade_qty,
                 product_type=product_type,
@@ -133,7 +166,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 order_type = dhan.LIMIT
                 
                 place_order_result =  dhan.place_order(security_id=security_id,   
-                exchange_segment=index_attribute.exchange_segment,
+                exchange_segment=exchange,
                 transaction_type= transaction_type, # BUY = dhan.Buy / SELL = dhan.SELL
                 quantity=trade_qty,
                 product_type=dhan.INTRA,
@@ -148,7 +181,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 'dhanClientId' : client_id,
                 'correlationId':correlation_id,
                 'security_id':security_id,
-                'exchange_segment':index_attribute.exchange_segment,
+                'exchange_segment':exchange,
                 'order_type':order_type,
                 'transaction_type':transaction_type,
                 'product_type':product_type,
@@ -182,7 +215,33 @@ def get_open_positions():
     except Exception as e:
         return {}
 
+def get_all_open_orders():
+    try:
+        return dhan.get_order_list()
+    except Exception as e:
+        return {}
 
+
+
+def risk_management():
+    fund_limit = dhan.get_fund_limits()
+    kill_switch_limits = db_management.get_kill_switch_rules()
+    half_hr_limit = kill_switch_limits['half_hour']
+    hr_limit = kill_switch_limits['hour']
+    kill_switch = kill_switch_limits['kill_switch']
+    if 'data' in fund_limit:
+        start_day_limit = fund_limit['data']['sodLimit']
+        available_balance = fund_limit['data']['availabelBalance']
+        
+        if available_balance < start_day_limit:
+            loss = start_day_limit - available_balance
+            loss_percent = (loss/start_day_limit)* 100
+            if loss_percent > half_hr_limit and loss_percent < hr_limit :
+                pass 
+                
+
+        
+        
 
 def closeAllPositions(security_id,exchange_segment,transaction_type,quantity,product_type):
     try:
@@ -210,8 +269,8 @@ def get_open_orders():
     try:
         order_list = dhan.get_order_list()
         if "data" in order_list:
-            pending_orders = [order for order in order_list["data"] if order["orderStatus"] == "TRADED"]
-            logger.info(pending_orders)
+            pending_orders = [order for order in order_list["data"] if order["orderStatus"] == "PENDING"]
+            #logger.info(pending_orders)
             return pending_orders
         else:
             return {}
@@ -231,9 +290,9 @@ def cancel_open_order(order_id):
         return {}
     
     
-def modify_open_order(order_id,quantity,price):
+def modify_open_order(order_id,quantity,price,order_type,leg_name,disclosed_qty,trigger_price,validity):
     try:
-        result = dhan.modify_order(order_id=order_id,quantity=quantity,price=price)
+        result = dhan.modify_order(order_id=order_id,quantity=quantity,price=price,leg_name=leg_name,disclosed_quantity=disclosed_qty,order_type=order_type,trigger_price=trigger_price,validity=validity)
         return result
         
     except Exception as e:
@@ -271,9 +330,9 @@ def get_intraday_data():
     except Exception as e:
         return []
 
-def add_trade_level(id,index_name,option_type,price_level,dhan_client_id):
+def add_trade_level(id,index_name,option_type,price_level,dhan_client_id,confidence):
     logger.info("add_trade_level")
-    last_row = db_management.add_trade_trigger_levels(id=id,index_name=index_name,option_type=option_type,level=price_level,dhanClientId=dhan_client_id)
+    last_row = db_management.add_trade_trigger_levels(id=id,index_name=index_name,option_type=option_type,level=price_level,dhanClientId=dhan_client_id,confidence=confidence)
     logger.info("db_management")
     get_trade_price_levels()
     logger.info("get_trade_price_levels")
@@ -326,6 +385,13 @@ def get_trade_price_levels():
 
 
 get_trade_price_levels()
+
+
+def get_index_rules(dhan_client_id):
+    return db_management.get_index_details(client_id=dhan_client_id)
+    
+def get_kill_switch_rule(dhan_client_id):
+    return db_management.get_kill_switch_rules(client_id=dhan_client_id)
 
 def market_feed_callback(data):
     
@@ -384,9 +450,13 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
         diff = float(price) - item
         #logger.printLogs(f"index_name = {index_name} --> diff CE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[0]}")
         if (diff <= 0 and diff >= diff_CE) and (item in index_trigger[0]) :
-            logger.info(f"index_name CE = {index_name} --> diff --> {diff}")
-                           
-            placeOrder(index_name=index_name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type)
+        
+            level_detail = db_management.get_level_details(client_id=client_id,trigger_level = index_trigger[0],index_name=index_name)               
+            confidence = level_detail['trade_confidence']
+            
+            logger.info(f"index_name CE = {index_name} --> diff --> {diff} --> confidence --> {confidence}")
+            
+            placeOrder(index_name=index_name,option_type=Option_Type.CE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type,confidence=confidence)
             index_trigger[0].discard(item)
             db_management.delete_trade_trigger_levels_with_index(client_id=client_id,index_name=index_name,level=item)
 
@@ -394,8 +464,12 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
         diff = float(price) - item
        # logger.printLogs(f"index_name = {index_name} --> diff PE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[1]}")                 
         if (diff >= 0 and diff <= diff_PE) and (item in index_trigger[1]) :
-            logger.info(f"index_name PE = {index_name} --> diff --> {diff}")
-            placeOrder(index_name=index_name,option_type=Option_Type.PE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type)
+           
+            level_detail = db_management.get_level_details(client_id=client_id,trigger_level = index_trigger[1],index_name=index_name)               
+            confidence = level_detail['trade_confidence']
+               
+            logger.info(f"index_name PE = {index_name} --> diff --> {diff} --> confidence --> {confidence}")
+            placeOrder(index_name=index_name,option_type=Option_Type.PE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type,confidence=None)
             index_trigger[1].discard(item)
             db_management.delete_trade_trigger_levels_with_index(client_id=client_id,index_name=index_name,level=item)
                  

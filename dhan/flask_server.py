@@ -8,6 +8,7 @@ import threading
 from status_checker import StatusChecker
 import json
 from logger import logger
+import json_management as json_management
 
 api = "127.0.0.1:8000"
 app = Flask(__name__)
@@ -50,13 +51,21 @@ def modifyOpenOrders():
     order_id = request.args.get('order_id')
     quantity =  request.args.get('quantity')
     price = request.args.get('price')
+    order_type = request.args.get('order_type')
+    trigger =  request.args.get('trigger')
+    leg = request.args.get('leg')
+    validity = request.args.get('validity')
+    disclosed =  request.args.get('disclosed')
     
-    result = my_app.modify_open_order(order_id=order_id,price=price,quantity=quantity)
+    
+    result = my_app.modify_open_order(order_id=order_id,price=price,quantity=quantity,order_type=order_type,trigger_price=trigger,validity=validity,disclosed_qty=disclosed,leg_name=leg)
     print(result)
     response = {}
     response["data"] = result
     data =  make_response(json.dumps(response));
     return data
+
+
 
 @app.route('/orderstatus', methods=["GET"])
 def get_order_status():
@@ -99,13 +108,6 @@ def placeOrder():
     data = my_app.placeOrder(index_name=index_name,option_type=option_type,transaction_type=transaction_type,dhan_client_id=dhan_client_id,client_order_id=client_order_id,product_type=product_type)
    
     logger.info(data)
-    # if not data and not data['data']['orderId']:
-
-    #     order_id = data['data']['orderId'] 
-    #     security_id =data['security_id']
-    #     checker = StatusChecker(timeout= 5,dhan= my_app.dhan,correlation_id=client_order_id,order_id=order_id,security_id=security_id,socket_id=socket_client_id,socketIo=socketio)
-    #     checker.start()
-   # response.headers['x-request-type'] = 'placeOrder'
     data['client_order_id'] = client_order_id
     response = make_response(data)
     return response
@@ -116,9 +118,10 @@ def add_trade_level():
     option_type = request.args.get('option_type')
     price_level = request.args.get('price_level')
     dhan_client_id  = request.args.get('dhan_client_id')
+    confidence  = request.args.get('trade_confidence')
     id = request.args.get('id');
 
-    result = my_app.add_trade_level(id =id,index_name = index_name,option_type= option_type,price_level=price_level,dhan_client_id = dhan_client_id)
+    result = my_app.add_trade_level(id =id,index_name = index_name,option_type= option_type,price_level=price_level,dhan_client_id = dhan_client_id,confidence=confidence)
     response = {}
     response["data"] = result
     data =  make_response(json.dumps(response));
@@ -131,7 +134,7 @@ def get_trade_level():
     dhan_client_id  = request.args.get('dhan_client_id')
     data = my_app.get_trade_levels(dhan_client_id=dhan_client_id)
     response = {}
-    response["data"] = data
+    response["data"] = json_management.dict_to_string_json(data)
     return make_response(json.dumps(response))
 
 @app.route('/deleteLevels', methods=["GET"])
@@ -149,9 +152,42 @@ def delete_trade_level():
 def fundLimit():
     return my_app.getFundLimit()
 
+@app.route('/indexRule', methods=["GET"])
+def index_rule():
+    dhan_id = request.args.get('dhan_client_id')
+    
+    result = my_app.get_index_rules(dhan_id)
+    response = {}
+    response["data"] = result
+    return make_response(json.dumps(response))
+
+@app.route('/killSwitchRule', methods=["GET"])
+def kill_switch_rule():
+    dhan_id = request.args.get('dhan_client_id')
+    
+    result = my_app.get_kill_switch_rule(dhan_id)
+    response = {}
+    response["data"] = result
+    return make_response(json.dumps(response))
+
 @app.route('/')
 def flask_server():
     return 'hello_world'
+
+@app.route('/test1')
+def flask_server_test1():
+    result = my_app.get_open_positions()
+    response = {}
+    response["data"] = result
+    return make_response(json.dumps(response))
+
+@app.route('/test2')
+def flask_server_test2():
+    result = my_app.get_all_open_orders()
+    response = {}
+    response["data"] = result
+    return make_response(json.dumps(response))
+
 
 
 def start_dhan_feed():

@@ -23,4 +23,16 @@ def replace_empty_with_null(data):
         return None
     else:
         return data
+    
+def dict_to_string_json(data):
+    def convert_to_string(item):
+        if isinstance(item, dict):
+            return {str(k): convert_to_string(v) for k, v in item.items()}
+        elif isinstance(item, list):
+            return [convert_to_string(i) for i in item]
+        else:
+            return str(item)
+    
+    string_dict = convert_to_string(data)
+    return string_dict
 

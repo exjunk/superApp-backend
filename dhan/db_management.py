@@ -109,7 +109,26 @@ def get_trade_trigger_levels_with_index(client_id,index_name):
         if connection.is_connected():
             connection.close()
             cursor.close()        
-    
+
+def get_level_details(client_id,level,index_name):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f"SELECT * from trade_trigger where dhanClientId = {client_id} and index_name = '{index_name}' and price_level = '{level}'"
+            cursor.execute(sql) 
+            return cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        logger.info(f"mysql.connector.Error: {err}")
+    except Exception as e:
+        logger.info(f"Exception: {e}")
+    finally:
+        if connection.is_connected():
+            connection.close()
+            cursor.close()       
+        
 
 def delete_trade_trigger_levels_with_index(client_id,index_name,level):
     try:
@@ -131,16 +150,16 @@ def delete_trade_trigger_levels_with_index(client_id,index_name,level):
             connection.close()
             cursor.close()        
 
-def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level):
+def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level,confidence):
     try:
         if not connection.is_connected():
             db_connection()
 
         with connection.cursor(dictionary=True) as cursor:
             if id == '' or id == None :
-                sql = f"INSERT INTO `trade_trigger` (`dhanClientId`, `index_name`, `option_type`, `price_level`) VALUES ('{dhanClientId}', '{index_name}', '{option_type}', {level})"
+                sql = f"INSERT INTO `trade_trigger` (`dhanClientId`, `index_name`, `option_type`, `price_level`,`trade_confidence`) VALUES ('{dhanClientId}', '{index_name}', '{option_type}', {level}, {confidence})"
             else:
-                sql = f"UPDATE `trade_trigger` SET `dhanClientId` = {dhanClientId}, `index_name` = '{index_name}', `option_type` = '{option_type}', `price_level` = {level} WHERE `id` = {id}"
+                sql = f"UPDATE `trade_trigger` SET `dhanClientId` = {dhanClientId}, `index_name` = '{index_name}', `option_type` = '{option_type}', `price_level` = {level},`trade_confidence` = {confidence} WHERE `id` = {id}"
   
               # sql = "INSERT INTO trade_trigger (dhanClientId, index_name,option_type,price_level) VALUES (%s, %s,%s,%s)", (dhanClientId, index_name,option_type,level)
             logger.info(sql)
@@ -171,6 +190,46 @@ def add_trade_trigger_levels(id,dhanClientId,index_name,option_type,level):
             cursor.close()        
        
 
+def get_index_rules(client_id,index):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f"SELECT * from market_indices where dhanClientId = {client_id} and index_name = '{index}'"
+            cursor.execute(sql) 
+            return cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        logger.info(f"mysql.connector.Error: {err}")
+    except Exception as e:
+        logger.info(f"Exception: {e}")
+    finally:
+        if connection.is_connected():
+            connection.close()
+            cursor.close()
+            
+
+def get_kill_switch_rules(client_id):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f"SELECT * from kill_switch_rule where dhanClientId = {client_id}"
+            cursor.execute(sql) 
+            return cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        logger.info(f"mysql.connector.Error: {err}")
+    except Exception as e:
+        logger.info(f"Exception: {e}")
+    finally:
+        if connection.is_connected():
+            connection.close()
+            cursor.close()          
+            
+            
 
 
 
