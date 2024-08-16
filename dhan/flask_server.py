@@ -9,12 +9,15 @@ from status_checker import StatusChecker
 import json
 from logger import logger
 import json_management as json_management
+from real_time_pnl_calculator import RealtimePnLCalculator
+
 
 api = "127.0.0.1:8000"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 socketio = SocketIO(app, message_queue='amqp://guest:guest@localhost:5672/',cors_allowed_origins = "*")
 cors = CORS(app)
+pnl_calculator = RealtimePnLCalculator(my_app.dhan, socketio)
 
 @app.after_request
 def after_request(response):
@@ -201,6 +204,8 @@ def start_dhan_feed():
 
     receiver_thread(parent_conn)
     
+    pnl_calculator.start()
+    
     #process.join()   # wait for process to complete and join main thread
 
 def receiver_thread(conn):
@@ -226,6 +231,9 @@ def handle_message(msg):
 
 def send_msg_via_socket_io(msg):
     socketio.emit('market_feed',msg)    
+
+def send_pnl_via_socket_io(msg):
+    socketio.emit('pnl',msg)   
 
 if __name__ == '__main__' :
     my_app.init()

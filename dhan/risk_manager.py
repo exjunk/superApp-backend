@@ -51,21 +51,21 @@ class RiskManager:
                 pnl = pnl - 40 #brokerage 
                      
             
-            fund_limit = self.dhan.get_fund_limits()
-            logger.info(f"risk management {fund_limit}")
-            if 'data' not in fund_limit:
-                logger.error("Failed to retrieve fund limits")
-                return False
+           # fund_limit = self.dhan.get_fund_limits()
+           # logger.info(f"risk management {fund_limit}")
+           # if 'data' not in fund_limit:
+           #     logger.error("Failed to retrieve fund limits")
+           #     return False
 
-            data = fund_limit['data']
-            start_limit = data['sodLimit']
-            available_balance = data['availabelBalance']
-            utilised_balance = data['utilizedAmount']
-            
-            if  self.start_of_day_limit != 0:
-                sod_limit = self.start_of_day_limit
-            else :
-                sod_limit = start_limit
+           # data = fund_limit['data']
+           # start_limit = data['sodLimit']
+           # available_balance = data['availabelBalance']
+          #  utilised_balance = data['utilizedAmount']
+            sod_limit = self.start_of_day_limit
+           # if  self.start_of_day_limit != 0:
+                
+           # else :
+           #     sod_limit = start_limit
             
            # utilized_balance = data['utilizedAmount']
             
