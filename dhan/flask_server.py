@@ -110,6 +110,9 @@ def placeOrder():
     
     data = my_app.placeOrder(index_name=index_name,option_type=option_type,transaction_type=transaction_type,dhan_client_id=dhan_client_id,client_order_id=client_order_id,product_type=product_type)
    
+    if data.get('status') == 'success':
+        my_app.emit_order_placed(socketio, data['data']['orderId'])
+    
     logger.info(data)
     data['client_order_id'] = client_order_id
     response = make_response(data)

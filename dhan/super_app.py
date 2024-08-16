@@ -42,11 +42,15 @@ def fetch_index_details_from_db(client_id,index):
     
     return kill_switch_rules,index_rules
 
+def emit_order_placed(socketio, order_id):
+    """Emit a Socket.IO event for a placed order."""
+    socketio.emit('order_placed', {'message': 'New order placed', 'order_id': order_id})
+
 
 def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_client_id,product_type,socket_client_id = None,parent_conn = None,confidence = None):
     
     # if the user is pressing CE / PE directly from UI, 
-    # i am converting it to BO order so that SL can be placed for the order 
+    # i am converting it to BO order so that Auto SL can be placed for the order 
     if product_type == dhan.INTRA:
         product_type = dhan.BO
     

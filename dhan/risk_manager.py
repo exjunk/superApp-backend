@@ -139,17 +139,17 @@ class RiskManager:
             import requests
 
             url = 'https://api.dhan.co/killSwitch'
-            params = {'killSwitchStatus': 'ACTIVATE'}
+            params = {'killSwitchStatus': 'ACTIVATE'} #ACTIVATE / DEACTIVATEcd
             headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'access-token': client_token  # Replace 'JWT' with your actual JWT token
             }
 
-            response = requests.post(url, params=params, headers=headers)
+           # response = requests.post(url, params=params, headers=headers)
 
-            logger.info(f"Status Code: {response.status_code}")
-            logger.info(f"Response Body: {response.text}")
+           # logger.info(f"Status Code: {response.status_code}")
+           # logger.info(f"Response Body: {response.text}")
         except Exception as e:
             logger.error(f"Error in activating kill switch: {str(e)}")
                   
