@@ -14,11 +14,12 @@ class RiskManager:
         self.last_check_time = datetime.now() - timedelta(minutes=5)
         self.resting_until = None
         self.kill_switch_activated = False
+        self.start_of_day_limit = 0
 
     def risk_management(self):
         logger.info("risk management init")
         current_time = datetime.now()
-
+        self.get_account_balance()
         # Check if we're in a resting period
         if self.resting_until and current_time < self.resting_until:
             return False
@@ -37,6 +38,8 @@ class RiskManager:
             #logger.info("risk management fund_limit")
             
             positions = self.dhan.get_positions()
+            
+            
             pnl = 0
             
             for position in positions.get('data', []):
@@ -55,8 +58,15 @@ class RiskManager:
                 return False
 
             data = fund_limit['data']
-            sod_limit = data['sodLimit']
-           # available_balance = data['availabelBalance']
+            start_limit = data['sodLimit']
+            available_balance = data['availabelBalance']
+            utilised_balance = data['utilizedAmount']
+            
+            if  self.start_of_day_limit != 0:
+                sod_limit = self.start_of_day_limit
+            else :
+                sod_limit = start_limit
+            
            # utilized_balance = data['utilizedAmount']
             
             #since pnl is already negative,so we have to add
@@ -86,6 +96,15 @@ class RiskManager:
         except Exception as e:
             logger.error(f"Error in risk management: {str(e)}")
             return False
+    
+    def get_account_balance(self):
+        import db_management as db_management
+        balance = db_management.get_account_balance(self.client_id)
+        if len(balance) > 0 :
+            self.start_of_day_limit = balance[0]['start_day_balance']
+        else :
+            self.start_of_day_limit = 0
+        
 
     def close_all_positions_and_orders(self):
         try:
@@ -134,7 +153,7 @@ class RiskManager:
         except Exception as e:
             logger.error(f"Error in activating kill switch: {str(e)}")
                   
-
+    
     def periodic_risk_check(self):
         while True:
             self.risk_management()

@@ -84,4 +84,6 @@ def get_current_time_stamp_and_date():
     formatted_time = now.strftime('%d-%m-%Y %H:%M:%S')
     
     return f"{curr_ta}",formatted_time
-    
+
+def format_number(number):
+    return f"{number:.2f}"

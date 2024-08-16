@@ -110,13 +110,15 @@ def get_trade_trigger_levels_with_index(client_id,index_name):
             connection.close()
             cursor.close()        
 
-def get_level_details(client_id,level,index_name):
+def get_level_details(client_id,level,index_name,option_type):
+    logger.info(f"Get level details {level} {type(level)},{option_type}")
     try:
         if not connection.is_connected():
             db_connection()
 
         with connection.cursor(dictionary=True) as cursor:
-            sql = f"SELECT * from trade_trigger where dhanClientId = {client_id} and index_name = '{index_name}' and price_level = '{level}'"
+            sql = f"SELECT * from trade_trigger where dhanClientId = {client_id} and index_name = '{index_name}' and price_level = {level} and option_type = '{option_type}'"
+            logger.info(sql)
             cursor.execute(sql) 
             return cursor.fetchall()
 
@@ -231,6 +233,24 @@ def get_kill_switch_rules(client_id):
             
             
 
+def get_account_balance(client_id):
+    try:
+        if not connection.is_connected():
+            db_connection()
+
+        with connection.cursor(dictionary=True) as cursor:
+            sql = f"SELECT * from account_balance where dhanClientId = {client_id}"
+            cursor.execute(sql) 
+            return cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        logger.info(f"mysql.connector.Error: {err}")
+    except Exception as e:
+        logger.info(f"Exception: {e}")
+    finally:
+        if connection.is_connected():
+            connection.close()
+            cursor.close()          
 
 
 

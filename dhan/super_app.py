@@ -44,6 +44,13 @@ def fetch_index_details_from_db(client_id,index):
 
 
 def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_client_id,product_type,socket_client_id = None,parent_conn = None,confidence = None):
+    
+    # if the user is pressing CE / PE directly from UI, 
+    # i am converting it to BO order so that SL can be placed for the order 
+    if product_type == dhan.INTRA:
+        product_type = dhan.BO
+    
+    
     if not risk_manager.check_risk():
         logger.warning("Order placement halted due to risk management rules.")
         return {}
@@ -53,7 +60,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         
         index_config = Index_attributes.get_index_attributes(index_name)
         
-        kill_switch_rules,index_rules = fetch_index_details_from_db(client_id=dhan_client_id)
+        kill_switch_rules,index_rules = fetch_index_details_from_db(client_id=dhan_client_id,index=index_name)
         
         trade_qty = index_config.lotsize
         default_qty = index_config.lotsize
@@ -66,7 +73,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         if  len (index_rules) > 0:
             trading_lot = index_rules[0]['trading_lot']
             default_qty = index_rules[0]['default_qty']
-            trade_qty = default_qty * trading_lot
+            trade_qty = int(default_qty) * int(trading_lot)
             risk = index_rules[0]['stop_loss']
             profit = index_rules[0]['profit']
             exchange = index_rules[0]['exchange']
@@ -87,10 +94,10 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
                 trade_qty = default_qty * math.ceil(trading_lot/2)     
 
             if confidence == 0.75 :
-                profit = profit * 1.5 
+                profit = float(profit) * float(1.5) 
              
             if confidence == 1 :
-                profit = profit * 2.5
+                profit = float(profit) * float(2.5)
                    
         multiplier = index_config.multiplier
         current_price = index_config.current_price
@@ -98,8 +105,8 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         strike_price = strike_selection.calculate_trading_strike(DefaultExpiry.current,index_name,current_price,multiplier,option_type)
         correlation_id = client_order_id #utils.generate_correlation_id(max_length=15)
         
-        security_id = str(strike_price['SEM_SMST_SECURITY_ID'])
-        strike_symbol = strike_price['SEM_CUSTOM_SYMBOL']
+        security_id = str(strike_price['SM_SCRIP_CODE'])
+        strike_symbol = strike_price['SM_CUSTOM_SYMBOL']
         
         #logger.info(f"security_id --> {security_id}")
         #logger.info(price_map)
@@ -118,7 +125,7 @@ def placeOrder(index_name,option_type,transaction_type,client_order_id,dhan_clie
         order_type = dhan.MARKET
         
         place_order_result = {}
-        logger.info(f"current_price {current_price} -- > order_type {order_type} --> product_type {product_type}")
+        logger.info(f"current_price {current_price} -- > order_type {order_type} --> product_type {product_type} --> profit => {profit} --> quantity => {trade_qty}")
         if current_price != None:
             if product_type == dhan.BO:
                 order_type = dhan.LIMIT
@@ -451,8 +458,8 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
         #logger.printLogs(f"index_name = {index_name} --> diff CE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[0]}")
         if (diff <= 0 and diff >= diff_CE) and (item in index_trigger[0]) :
         
-            level_detail = db_management.get_level_details(client_id=client_id,trigger_level = index_trigger[0],index_name=index_name)               
-            confidence = level_detail['trade_confidence']
+            level_detail = db_management.get_level_details(client_id=client_id,level = utils.format_number(item),index_name=index_name,option_type=Option_Type.CE.name)               
+            confidence = level_detail[0]['trade_confidence']
             
             logger.info(f"index_name CE = {index_name} --> diff --> {diff} --> confidence --> {confidence}")
             
@@ -465,8 +472,8 @@ def level_trigger_logic(price,index_name,diff_CE,diff_PE,index_trigger):
        # logger.printLogs(f"index_name = {index_name} --> diff PE --> {diff} item --> {item} item in --> {item in index_trigger_bnf[1]}")                 
         if (diff >= 0 and diff <= diff_PE) and (item in index_trigger[1]) :
            
-            level_detail = db_management.get_level_details(client_id=client_id,trigger_level = index_trigger[1],index_name=index_name)               
-            confidence = level_detail['trade_confidence']
+            level_detail = db_management.get_level_details(client_id=client_id,level = utils.format_number(item),index_name=index_name,option_type=Option_Type.PE.name)               
+            confidence = level_detail[0]['trade_confidence']
                
             logger.info(f"index_name PE = {index_name} --> diff --> {diff} --> confidence --> {confidence}")
             placeOrder(index_name=index_name,option_type=Option_Type.PE.name,transaction_type=dhan.BUY,client_order_id=utils.generate_correlation_id(),dhan_client_id=client_id,product_type=product_type,confidence=None)
